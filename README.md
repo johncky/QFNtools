@@ -1,1 +1,1 @@
-# QuantFin
+# Quant Finance
