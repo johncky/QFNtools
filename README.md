@@ -12,6 +12,7 @@ Key:
 - Interpret the first 3 PC: What do they represent?
 - Run linear regression on each PC for each factor in a collection (we use oil, commodities, currency index, currency pair that represent bullishness / flow). This is to find out a set of real asset factors that represent the PCA of equities most closely.
 - Run linear regression on indices return for the factors we selected in last step, and interpret.
+
 Result:
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/PCs.png?raw=true)
 
