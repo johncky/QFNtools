@@ -14,6 +14,7 @@ Key:
 - Run linear regression on indices return for the factors we selected in last step, and interpret.
 
 Result:
+
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/PCs.png?raw=true)
 
 1. The first PC seems to be a general level of global returns, all have the same signs with mean of 21%# The second PC seems to reflect a contrast of developed markets vs emerging markets
