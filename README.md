@@ -36,7 +36,7 @@ Result:
 3. The third PC seems to reflect the locational difference between fast-growing Asian economies vs the western world
 4. We seem not able to assign themes to the remaining PCs
 
-5. Below are the eigen portfolios of HSI (top 3)
+5. Below are the eigen portfolios of global indices (top 3)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
 
