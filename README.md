@@ -24,7 +24,7 @@ For example, I want to know if there are effects from developed vs emerging mark
 Key:
 - Perform PCA on indices return to find principal components that explains most variations in indices returns. Then construct eigen portfolios from those PCs.
 - Interpret the first 3 PCs: What do they represent? (global base return, developed market effect, locational difference...)
-- Run linear regression on each PC with each factor(commodities (oil, copper, coin,...), currency, currency pair) to find a set of factors that represent the PCA of indices return.
+- Run linear regression on each PC with each factor(commodities (oil, copper, coin,...), currency, currency pair) to find a set of factors that represent the PC of indices return.
 - Run linear regression on indices return with the selected factors last step, and interpret.
 
 Result:
