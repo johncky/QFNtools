@@ -2,7 +2,7 @@
 
 ### 1. Long-only Efficient Frontier
 There is analytical solution for finding Efficient Frontier of a collection of assets. However, solution portfolios are usually not tradable. 
-Because we cannot short certain assets, or to take extremely high leverage through long-short.
+Because we cannot short certain assets, or take extremely high leverage through long-short.
 In this section, "scipy.optimize.minimize" function is used to find the long-only EF for a self-defined collection of assets. These portfolios are tradable.
 
 Key:
@@ -17,7 +17,7 @@ Result:
 1. A long-only Efficient Frontier is found
 2. weightings for efficient portfolios are output in csv.
 
-### 2. Factor Analysis for Global Equities Indices through PCA
+### 2. Factor Analysis on Global Equities Indices using PCA
 In this section, we want to reconcile the fundamental driving force of global equity indices with real assets that represent flow/bullishness/risk-aversion.
 For example, we want to know if there are effects from developed vs emerging markets? What commodities/currency/pairs can represent this effect?
 
@@ -35,10 +35,22 @@ Result:
 2. The second PC seems to reflect a contrast of developed markets vs emerging markets
 3. The third PC seems to reflect the locational difference between fast-growing Asian economies vs the western world
 4. We seem not able to assign themes to the remaining PCs
+   
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_PCC.png?raw=true)
 
+5. Above are the eigen portfolios of HSI (top 3)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_Regression.png?raw=true)
-4. AUD/JPY is the most important factor for explaining SPX return variation. 
+
+6. AUD/JPY is the most important factor for explaining SPX return variation. 
    This is very intuitive. Since the pair represent global bullishness (AUD rise=commodity flow, JPY down = flow to equity)
    
+### 3. Eigen Portfolio 
+Reconstruct eigen portfolios of liquid US ETF. 
+There is Hindsight bias, I calculated the PC loadings using all data, and reconstruct their price path using the PC loadings
+Also assume daily rebalancing to maintain constant weightings. The chart is NOT the actual portfolio value of investing in the eigen portfolios!
+
+Result:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_EP.png?raw=true)
 
