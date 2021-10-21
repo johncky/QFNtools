@@ -18,8 +18,8 @@ Result:
 2. weightings for efficient portfolios are output in csv.
 
 ### 2. Factor Analysis on Global Equities Indices using PCA
-In this section, we want to reconcile the fundamental driving force of global equity indices with real assets that represent flow/bullishness/risk-aversion.
-For example, we want to know if there are effects from developed vs emerging markets? What commodities/currency/pairs can represent this effect?
+In this section, I want to reconcile the fundamental driving force of global equity indices with real assets that represent flow/bullishness/risk-aversion.
+For example, I want to know if there are effects from developed vs emerging markets? What commodities/currency/pairs can represent this effect?
 
 Key:
 - Perform PCA on indices return to find principal components that explains most variations in indices returns. Then construct eigen portfolios from those PCs.
