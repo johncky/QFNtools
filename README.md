@@ -35,16 +35,16 @@ Result:
 2. The second PC seems to reflect a contrast of developed markets vs emerging markets
 3. The third PC seems to reflect the locational difference between fast-growing Asian economies vs the western world
 4. We seem not able to assign themes to the remaining PCs
-   
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_2.png?raw=true)
 
-5. Above are the eigen portfolios of HSI (top 3)
+5. Below are the eigen portfolios of HSI (top 3)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
 
 6. AUD/JPY is the most important factor for explaining SPX return variation. 
    This is very intuitive. Since the pair represent global bullishness (AUD rise=commodity flow, JPY down = flow to equity)
-   
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_2.png?raw=true)
+
 ### 3. Eigen Portfolio 
 Reconstruct eigen portfolios of liquid US ETF. 
 There is Hindsight bias, I calculated the PC loadings using all data, and reconstruct their price path using the PC loadings
