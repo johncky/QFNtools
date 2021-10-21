@@ -29,14 +29,14 @@ Key:
 
 Result:
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_2.png?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_1.png?raw=true)
 
 1. The first PC seems to be a general level of global returns, all have the same signs with mean of 21% 
 2. The second PC seems to reflect a contrast of developed markets vs emerging markets
 3. The third PC seems to reflect the locational difference between fast-growing Asian economies vs the western world
 4. We seem not able to assign themes to the remaining PCs
    
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_2.png?raw=true)
 
 5. Above are the eigen portfolios of HSI (top 3)
 
