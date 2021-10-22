@@ -48,7 +48,7 @@ Result:
 ### 3. Eigen Portfolio 
 Reconstruct eigen portfolios of liquid US ETF. 
 There is Hindsight bias, I calculated the PC loadings using all data, and reconstruct their price path using the PC loadings
-Also assume daily rebalancing to maintain constant weightings. The chart is NOT the actual portfolio value of investing in the eigen portfolios!
+The chart is NOT the actual portfolio value of investing in the eigen portfolios.
 
 Result:
 
