@@ -52,5 +52,11 @@ Also assume daily rebalancing to maintain constant weightings. The chart is NOT 
 
 Result:
 
+1. Eigen Portfolios 
+
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_EP.png?raw=true)
+
+2. Eigen Portfolios have uncorrelated returns
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_uncor.png?raw=true)
 
