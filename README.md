@@ -104,7 +104,7 @@ R2 of Factor Model:
     fs.R2
 ```
 
-It actually explains indices return pretty well ! (except China A share):
+It actually explains index returns pretty well ! (except China A share):
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
