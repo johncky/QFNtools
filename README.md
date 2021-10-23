@@ -3,9 +3,9 @@
 Analytical tools for quantitative finance people.
 
 ## Content
-1. Efficient Frontier: Solve efficient frontier of a selection of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
-2. Eigen Portfolio: Find eigen portfolios of a selection of assets. Compute their return and price path.
-3. Factor Selection: Select "factors" from a group of factor assets (X), and build Factor Models to explain returns of a group of assets (Y).
+1. Efficient Frontier: Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
+2. Factor Selection: Select "factors" from a group of factor assets (X), and build Factor Models to explain returns of a group of assets (Y).
+3. Eigen Portfolio: Find eigen portfolios of a group of assets. Compute their returns and price paths.
 
 ### 1. Efficient Frontier
 
@@ -38,12 +38,13 @@ weights:
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
 
-####EfficientFrontier(risk_measure, alpha):
+#### EfficientFrontier(risk_measure, alpha):
 risk_measure: one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
 
 alpha: percentile to use in "cvar" and "var" calculation
 
-####fit(df, wbnd, mu_range):
+#### EfficientFrontier.fit(df, wbnd, mu_range):
+
 df: pandas DataFrame of asset returns
 
 wbnd: bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
@@ -53,12 +54,14 @@ mu_range (Tune this): range of target return to optimize. If this is above / bel
 ### 2. Factor Selection
 What it does:
 
-1. Find Principal Components of the group of assets
-2. Select factors from another group of factor assets whose absolute correlation with the PCs >= "req_corr". Use them
-   to represent the fictional PCs.
+1. Find Principal Components of a group of assets (Y)
+2. Select factors from another group of factor assets (X) whose absolute correlation with the PCs >= "req_corr". Use them
+   to represent the fictional PCs. (i.e. use real assets to represent the fictional Eigen portfolios)
 
 3. If between-factor correlation >= "max_f_cor", remove the one that has lower correlation with PCs.
-4. Run linear regression on each asset with the selected factors. Factor returns can explain return of asset.
+4. Run linear regression on each asset from Y with the selected factors from X. 
+   
+Hopefully, asset returns from Y can be explained by asset returns from factor assets (X).
 
 Example:
 
@@ -84,7 +87,7 @@ selected factors:
     fs.factor_df()
 ```
 
-merged df of selected factors & Principal Components the Y (equity):
+merged df of selected factors & Pprincipal components:
    ```python
     # see how each "factor" correlated with the PC of equities
     fs.merged_df().corr()
@@ -103,12 +106,12 @@ R2 of Factor Model:
     fs.R2
 ```
 
-It actually explains indices return pretty well !:
+It actually explains indices return pretty well ! (except China A share):
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
 
-####FactorSelection(req_exp, req_corr, max_f_cor):
+#### FactorSelection(req_exp, req_corr, max_f_cor):
 req_exp: [0,1], required explanatory power of the PCs. larger value = more PCs.
 
 req_corr:[0,1], required absolute correlation of factor with PCs in order to be selected.
@@ -143,14 +146,14 @@ price/return:
     ef.return_()
 ```
 
-####EigenPortfolio(req_exp):
+#### EigenPortfolio(req_exp):
 req_exp: required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
 
 
-####fit(df):
+#### fit(df):
 df: pandas DataFrame of asset returns
 
-####price(const_rebal) / return_(const_rebal):
+#### price(const_rebal) / return_(const_rebal):
 const_rebal: bool. If False, invest weights of eigen portfolios at period start. However, return correlation
 of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
 
