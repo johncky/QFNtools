@@ -1,7 +1,5 @@
 # QFNtools
 
-Analytical tools for quantitative finance people.
-
 ## Content
 1. Efficient Frontier: Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 2. Factor Selection: Select "factors" from a group of factor assets (X), ues them to build Factor Models to explain returns of a group of assets (Y).
