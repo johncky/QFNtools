@@ -4,7 +4,8 @@ from scipy.stats import pearsonr
 import statsmodels.api as sm
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
-
+from pykalman import KalmanFilter
+from statsmodels.sandbox.tools.tools_pca import pca
 
 class EigenPortfolio:
     def __init__(self, req_exp):
@@ -235,3 +236,65 @@ class EfficientFrontier:
         plt.xlabel(label,fontsize=10)
         plt.ylabel("Expected Return (%)",fontsize=10)
         plt.title("Efficient Frontier",fontsize=12)
+
+
+class DynamicFactorExposure:
+    def __init__(self):
+        self.kf = None
+        self.filter_df = None
+        self.smoothed_df = None
+        self.filter_state_means = None
+        self.filter_state_covs = None
+        self.smoothed_state_means = None
+        self.smoothed_state_covs = None
+        self.x = None
+        self.y = None
+        self.factor_pca = None
+        self.eigen_vec = None
+
+    def fit(self, y, x, factor_pca=False, n_pc=3):
+
+        if factor_pca:
+            self.factor_pca = True
+            xreduced, factors, evals, evecs = pca(x, keepdim=n_pc)
+            self.eigen_vec = pd.DataFrame(evecs, index=x.columns, columns=['PC{}'.format(i) for i in range(1, n_pc+1)])
+            x = pd.DataFrame(factors, index=x.index, columns=['PC{}'.format(i) for i in range(1, n_pc+1)])
+
+        self.x = x
+        self.y = y
+        n_dim_obs = y.shape[1]
+        n_dim_state = x.shape[1]+1
+        ntimestep = y.shape[0]
+        factors = sm.add_constant(x)
+
+        fac_obs = np.array(factors)
+        obs_matrics = np.zeros((ntimestep, n_dim_obs, n_dim_state))
+
+        for i in range(n_dim_obs):
+            obs_matrics[:, i, :] =fac_obs
+
+        kf = KalmanFilter(n_dim_obs=n_dim_obs, n_dim_state=n_dim_state, transition_matrices=np.eye(factors.shape[1]),
+                          observation_matrices=obs_matrics, em_vars=['transition_covariance', 'observation_covariance', 'initial_state_mean', 'initial_state_covariance'] )
+
+        if factor_pca:
+            cols = ['Intercept'] + ['beta-PC{}'.format(i) for i in range(1, n_pc+1)]
+        else:
+            cols=['Intercept'] + ['beta-{}'.format(i) for i in range(1, n_dim_state)]
+        self.kf = kf
+        self.filter_state_means, self.filter_state_covs = kf.filter(y)
+
+        self.filter_df = pd.DataFrame(self.filter_state_means, index=y.index, columns=cols)
+        self.smoothed_state_means, self.smoothed_state_covs = kf.smooth(y)
+        self.smoothed_df = pd.DataFrame(self.smoothed_state_means, index=y.index, columns=cols)
+
+    def plot(self, smoothed=False):
+        if smoothed:
+            self.smoothed_df.plot()
+        else:
+            self.filter_df.plot()
+
+    def factor_cov(self, smoothed=True):
+        if smoothed:
+            return self.smoothed_state_covs
+        else:
+            return self.filter_state_covs
