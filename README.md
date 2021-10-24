@@ -60,7 +60,7 @@ Selection Process:
 3. If between-factor correlation >= "max_f_cor", remove the one that has lower correlation with PCs.
 4. Run linear regression on each asset from Y with the selected factors from X. 
    
-Hopefully, asset returns from Y can be explained by asset returns from factor assets (X).
+Hopefully, asset returns from Y can be explained by factor assets returns X.
 
 Example:
 
