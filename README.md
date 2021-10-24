@@ -1,11 +1,13 @@
 Content
 =============================
 
-- [Efficient Frontier](#efficient-frontier) : Solve Efficient Frontier with risk measures "Variance", "Conditional VaR" or "VaR". 
+- [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Conditional VaR" or "VaR". 
 
-- [Factor Selection](#factor-selection) ：Select "factors" and build factor models to explain returns.
+- [Factor Selection](#factor-selection) ：Select "factors" and build **factor models** to explain returns.
 
-- [Eigen Portfolio](#eigen-portfolio) ：Find eigen portfolios of a group of assets.
+- [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
+  
+- [Dynamic Beta](#dynamic-beta) ：Find dynamic betas in a factor model with **Kalman Filter**.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
@@ -163,16 +165,16 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained ev
 
 
 
-# Dynamic Factor Exposure
+# Dynamic Beta
 Use **Kalman Filter** to estimate **dynamic beta** for each factor in a factor model.
 
 Example:
 
 ```python
-    from qfntools import DynamicFactorExposure
+    from qfntools import DynamicBeta
 
-    dfe = DynamicFactorExposure()
-    dfe.fit(yRet_df, factors_df)
+dfe = DynamicBeta()
+dfe.fit(yRet_df, factors_df)
 ```
 
 ## Methods:

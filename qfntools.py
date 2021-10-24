@@ -238,7 +238,7 @@ class EfficientFrontier:
         plt.title("Efficient Frontier",fontsize=12)
 
 
-class DynamicFactorExposure:
+class DynamicBeta:
     def __init__(self):
         self.kf = None
         self.filter_df = None
