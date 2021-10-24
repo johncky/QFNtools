@@ -70,7 +70,6 @@ Hopefully, asset returns from Y can be explained by factor assets returns X.
 Example:
 
 ```python
-# read data
     from qfntools import FactorSelection
     
     fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
@@ -95,12 +94,6 @@ df, group of assets to be explained
 **x**:
 df, group of "factor" assets X used to explain returns of Y
 
-
-### selected factors :
-   ```python
-    fs.factor_df()
-```
-
 ### factor model :
    ```python
     fs.betas
@@ -108,18 +101,17 @@ df, group of "factor" assets X used to explain returns of Y
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
 
-### selected factors & principal components:
-   ```python
-    # see how each "factor" correlated with the PC of equities
-    fs.merged_df().corr()
-```
-
 ### model R squared :
 ```python
     fs.R2
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
+
+### selected factors :
+   ```python
+    fs.factor_df()
+```
 
 # Eigen Portfolio
 Find eigen portfolios of a group of assets. Compute their returns and price paths.
