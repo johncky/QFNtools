@@ -1,14 +1,12 @@
 Content
 =============================
 
-- [Efficient Frontier](#efficient-frontier):
-  Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
-- [Factor Selection](#factor-selection):
-  Select "factors" from a group of factor assets (X), ues them to build Factor Models to explain returns of a group of assets (Y).
-- [Eigen Portfolio](#eigen-portfolio): 
-  Find eigen portfolios of a group of assets. Compute their returns and price paths.
+- [Efficient Frontier](#efficient-frontier)
+- [Factor Selection](#factor-selection)
+- [Eigen Portfolio](#eigen-portfolio)
 
 # Efficient Frontier
+Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 
 Example:
 
@@ -59,6 +57,8 @@ mu_range (Tune this):
 range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible. 
 
 # Factor Selection
+Select "factors" from a group of factor assets (X), ues them as predictors to build Factor Models to explain returns of another group (Y).
+
 Selection Process:
 
 1. Find Principal Components of a group of assets (Y)
@@ -137,6 +137,7 @@ df, group of "factor" assets X used to explain returns of Y
 
 
 # Eigen Portfolio
+Find eigen portfolios of a group of assets. Compute their returns and price paths.
 
 Example:
 
