@@ -13,13 +13,8 @@ Solve Efficient Frontier of a group of assets. Risk measures can be set to "stan
 ```python
     from qfntools import EfficientFrontier
    
-    # Preferably weekly or monthly
-    data = pd.read_excel('./data/biggestETFData.xlsx',index_col = 0)
-    data = data.resample('M').last()
-    data_return= data.pct_change().dropna(how = 'all')
-   
     ef = EfficientFrontier(risk_measure='cvar', alpha=5)
-    ef.fit(data_return, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
+    ef.fit(asset_return_df, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
 ```
 
 ## Class & Functions:
@@ -76,17 +71,8 @@ Example:
 # read data
     from qfntools import FactorSelection
     
-    equity = pd.read_excel('./data/data2.xlsx',index_col=0, sheet_name='equity')
-    factor = pd.read_excel('./data/data2.xlsx',index_col=0, sheet_name='factor')
-    
-    # 24 "factor" assets: commodities (oil, corn, ...), currency, currency pair, bond, ... 
-    factor_return = factor.pct_change().dropna()
-    
-    # group of equity
-    equity_return = equity.pct_change().dropna()
-    
     fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
-    fs.fit(y=equity_return, x=factor_return)
+    fs.fit(y=equity_return_df, x=factor_return_df)
 ```
 
 ## Class & Functions:
@@ -140,12 +126,9 @@ Example:
 
 ```python
     from qfntools import EigenPortfolio
-   
-    data = pd.read_excel('./data/data2.xlsx',index_col = 0)
-    data_return = data.pct_change().dropna(how = 'all')
-   
+
     ep = EigenPortfolio(req_exp=0.8)
-    ep.fit(data_return)
+    ep.fit(asset_return_df)
 ```
 
 ## Class & Functions:
