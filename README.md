@@ -8,7 +8,7 @@ Content
 # Efficient Frontier
 Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 
-Example:
+### Example:
 
 ```python
     from qfntools import EfficientFrontier
@@ -22,7 +22,26 @@ Example:
     ef.fit(data_return, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
 ```
 
-plot:
+## Class & Functions:
+### _EfficientFrontier(risk_measure, alpha)_ :
+**risk_measure**:
+one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
+
+**alpha**:
+percentile for "cvar" and "var" calculations
+
+### _fit(df, wbnd, mu_range)_ :
+
+**df**:
+df, returns of assets
+
+**wbnd**:
+bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
+
+**mu_range**:
+Tune this! range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible.
+
+### _plot_ :
    ```python
     ef.plot()
 ```
@@ -30,31 +49,12 @@ plot:
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_EF(cvar).png?raw=true)
 
 
-weights:
+### _weights_ :
 ```python
     ef.weights()
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
-
-## Class & Functions:
-#### _EfficientFrontier(risk_measure, alpha)_:
-risk_measure:
-one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
-
-alpha:
-percentile to use in "cvar" and "var" calculation
-
-#### _EfficientFrontier.fit(df, wbnd, mu_range)_:
-
-df:
-df, returns of assets
-
-wbnd:
-bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
-
-mu_range (Tune this):
-range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible. 
 
 # Factor Selection
 Select "factors" from a group of factor assets (X), ues them as predictors to build Factor Models to explain returns of another group (Y).
@@ -89,52 +89,49 @@ Example:
     fs.fit(y=equity_return, x=factor_return)
 ```
 
-selected factors:
+## Class & Functions:
+### _FactorSelection(req_exp, req_corr, max_f_cor)_ :
+**req_exp**:
+[0,1], required explanatory power of the PCs. larger value = more PCs.
+
+**req_corr**:
+[0,1], required absolute correlation of factor with PCs in order to be selected.
+
+**max_f_cor**:
+[0,1], maximum allowed between-factor correlation.
+
+### _fit(y, x)_ :
+**y**:
+df, group of assets to be explained
+
+**x**:
+df, group of "factor" assets X used to explain returns of Y
+
+
+### _selected factors_ :
    ```python
     fs.factor_df()
 ```
 
-merged df of selected factors & Pprincipal components:
-   ```python
-    # see how each "factor" correlated with the PC of equities
-    fs.merged_df().corr()
-```
-
-Factor model using selected factor
+### _factor model_ :
    ```python
     fs.betas
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
 
+### _selected factors & principal components_:
+   ```python
+    # see how each "factor" correlated with the PC of equities
+    fs.merged_df().corr()
+```
 
-R2 of Factor Model:
+### _model R squared_ :
 ```python
     fs.R2
 ```
 
-It actually explains index returns pretty well ! (except China A share):
-
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
-
-## Class & Functions:
-#### _FactorSelection(req_exp, req_corr, max_f_cor)_:
-req_exp:
-[0,1], required explanatory power of the PCs. larger value = more PCs.
-
-req_corr:
-[0,1], required absolute correlation of factor with PCs in order to be selected.
-
-max_f_cor:
-[0,1], maximum allowed between-factor correlation.
-
-#### _fit(y, x)_:
-y:
-df, group of assets to be explained
-
-x:
-df, group of "factor" assets X used to explain returns of Y
-
 
 # Eigen Portfolio
 Find eigen portfolios of a group of assets. Compute their returns and price paths.
@@ -151,35 +148,32 @@ Example:
     ep.fit(data_return)
 ```
 
-plot:
-   ```python
-    ep.plot()
-```
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
+## Class & Functions:
+### _EigenPortfolio(req_exp)_:
+**req_exp**:
+required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
 
 
-price/return:
+### _fit(df)_:
+**df**:
+df, asset returns
+
+
+### _price(const_rebal) / return\_(const_rebal)_:
+**const_rebal**:
+bool. If False, invest weights of eigen portfolios at period start. However, return correlation
+of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
+
 ```python
     ef.price()
     ef.return_()
 ```
 
-## Class & Functions:
-#### _EigenPortfolio(req_exp)_:
-req_exp:
-required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
+### _plot_ :
+   ```python
+    ep.plot()
+```
 
-
-#### _fit(df)_:
-df:
-df, asset returns
-
-
-#### _price(const_rebal) / return_(const_rebal)_:
-const_rebal:
-bool. If False, invest weights of eigen portfolios at period start. However, return correlation
-of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
-
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
 
 
