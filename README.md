@@ -51,7 +51,7 @@ wbnd: bound of weightings; (0,1) means long-only, (None, None) means short-selli
 mu_range (Tune this): range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible. 
 
 ### 2. Factor Selection
-What it does:
+Selection Process:
 
 1. Find Principal Components of a group of assets (Y)
 2. Select factors from another group of factor assets (X) whose absolute correlation with the PCs >= "req_corr". Use them
