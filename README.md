@@ -3,11 +3,12 @@ Content
 
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Conditional VaR" or "VaR". 
 
+- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in a factor model with **Kalman Filter**.
+
 - [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
   
-- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in a factor model with **Kalman Filter**.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
@@ -56,6 +57,49 @@ ef.weights()
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
+
+# Dynamic Beta
+Use **Kalman Filter** to estimate **dynamic betas**  in a factor model.
+
+Example:
+
+```python
+from qfntools import DynamicBeta
+
+dfe = DynamicBeta()
+dfe.fit(yRet_df, factors_df)
+```
+
+## Methods:
+### fit(_y_, _x_, _factor_pca_, _n\_pc_):
+**y**:
+df, returns of one/more assets (Y), dependent variable in the factor model. If there are more one asset, the dependent variable is a random vector.
+
+**x**:
+df, factors X, independent variables in the factor model.
+
+**factor_pca**:
+bool (Default=False). If True, principal components of X are used as factors. If False, X is used as factors.
+
+**n_pc**:
+int, number of principal components of X to be used as factors. Only useful when factor_pca = True.
+
+### plot(_smoothed_):
+**smoothed**:
+bool (Default=False). If True, plot result from Kalman Smoother. If False, plot result from Kalman Filter.
+
+```python
+dfe.plot(smoothed=False)
+```
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
+
+```python
+dfe.plot(smoothed=True)
+```
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_dynamicbetas.png?raw=true)
+
 
 # Factor Selection
 
@@ -157,46 +201,3 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained an
     ef.price()
     ef.return_()
 ```
-
-# Dynamic Beta
-Use **Kalman Filter** to estimate **dynamic betas**  in a factor model.
-
-Example:
-
-```python
-from qfntools import DynamicBeta
-
-dfe = DynamicBeta()
-dfe.fit(yRet_df, factors_df)
-```
-
-## Methods:
-### fit(_y_, _x_, _factor_pca_, _n\_pc_):
-**y**:
-df, returns of one/more assets (Y), dependent variable in the factor model. If there are more one asset, the dependent variable is a random vector.
-
-**x**:
-df, factors X, independent variables in the factor model.
-
-**factor_pca**:
-bool (Default=False). If True, principal components of X are used as factors. If False, X is used as factors.
-
-**n_pc**:
-int, number of principal components of X to be used as factors. Only useful when factor_pca = True.
-
-### plot(_smoothed_):
-**smoothed**:
-bool (Default=False). If True, plot result from Kalman Smoother. If False, plot result from Kalman Filter.
-
-```python
-dfe.plot(smoothed=False)
-```
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
-
-```python
-dfe.plot(smoothed=True)
-```
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_dynamicbetas.png?raw=true)
-
