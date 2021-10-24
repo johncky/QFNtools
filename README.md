@@ -17,10 +17,10 @@ Solve Efficient Frontier of a group of assets. Risk measures can be set to "stan
 ### Example:
 
 ```python
-    from qfntools import EfficientFrontier
-   
-    ef = EfficientFrontier(risk_measure='cvar', alpha=5)
-    ef.fit(asset_return_df, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
+from qfntools import EfficientFrontier
+
+ef = EfficientFrontier(risk_measure='cvar', alpha=5)
+ef.fit(asset_return_df, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
 ```
 
 ## Methods:
@@ -44,7 +44,7 @@ Tune this! range of target return to optimize. If this is above / below possible
 
 ### plot :
    ```python
-    ef.plot()
+ef.plot()
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_EF(cvar).png?raw=true)
@@ -52,7 +52,7 @@ Tune this! range of target return to optimize. If this is above / below possible
 
 ### weights :
 ```python
-    ef.weights()
+ef.weights()
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
@@ -75,10 +75,10 @@ Select "factors" from a group of factor assets (X), ues them as independent vari
 ### Example:
 
 ```python
-    from qfntools import FactorSelection
-    
-    fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
-    fs.fit(y=equity_return_df, x=factor_df)
+from qfntools import FactorSelection
+
+fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
+fs.fit(y=equity_return_df, x=factor_df)
 ```
 
 ## Methods:
@@ -94,27 +94,27 @@ Select "factors" from a group of factor assets (X), ues them as independent vari
 
 ### fit(_y_, _x_) :
 **y**:
-df, group of assets to be explained
+df, returns of assets to be explained
 
 **x**:
-df, group of "factor" assets X used to explain returns of Y
+df, group of "factors"  to explain y
 
 ### Results:
    ```python
-    fs.betas
+fs.betas
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
 
 ```python
-    fs.R2
+fs.R2
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
 ### see selected factors :
    ```python
-    fs.factor_df()
+fs.factor_df()
 ```
 
 # Eigen Portfolio
@@ -123,10 +123,10 @@ Find eigen portfolios of a group of assets X.
 ### Example:
 
 ```python
-    from qfntools import EigenPortfolio
+from qfntools import EigenPortfolio
 
-    ep = EigenPortfolio(req_exp=0.8)
-    ep.fit(asset_return_df)
+ep = EigenPortfolio(req_exp=0.8)
+ep.fit(asset_return_df)
 ```
 
 ## Methods:
@@ -142,8 +142,8 @@ df, asset returns
 
 ### price(_const\_rebal_) / return\_ (_const\_rebal_):
 **const_rebal**:
-bool. If False, invest weights of eigen portfolios at period start. However, return correlation
-of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
+bool. If False, invest weights of eigen portfolios at period start. However, correlation
+of eigen portfolios will not be exactly zero. If True, weights are maintained and eigen portfolios have zero correlations.
 
 ### plot :
    ```python
@@ -159,12 +159,12 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained ev
 ```
 
 # Dynamic Beta
-Use **Kalman Filter** to estimate **dynamic beta** for each factor in a factor model.
+Use **Kalman Filter** to estimate **dynamic betas**  in a factor model.
 
 Example:
 
 ```python
-    from qfntools import DynamicBeta
+from qfntools import DynamicBeta
 
 dfe = DynamicBeta()
 dfe.fit(yRet_df, factors_df)
@@ -189,13 +189,13 @@ int, number of principal components of X to be used as factors. Only useful when
 bool (Default=False). If True, plot result from Kalman Smoother. If False, plot result from Kalman Filter.
 
 ```python
-    dfe.plot(smoothed=False)
+dfe.plot(smoothed=False)
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
 
 ```python
-    dfe.plot(smoothed=True)
+dfe.plot(smoothed=True)
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_dynamicbetas.png?raw=true)
