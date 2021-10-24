@@ -36,12 +36,13 @@ weights:
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
 
-#### EfficientFrontier(risk_measure, alpha):
+### Class & Functions:
+#### _EfficientFrontier(risk_measure, alpha)_:
 risk_measure: one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
 
 alpha: percentile to use in "cvar" and "var" calculation
 
-#### EfficientFrontier.fit(df, wbnd, mu_range):
+#### _EfficientFrontier.fit(df, wbnd, mu_range)_:
 
 df: pandas DataFrame of asset returns
 
@@ -108,13 +109,19 @@ It actually explains index returns pretty well ! (except China A share):
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
-
-#### FactorSelection(req_exp, req_corr, max_f_cor):
+### Class & Functions:
+#### _FactorSelection(req_exp, req_corr, max_f_cor)_:
 req_exp: [0,1], required explanatory power of the PCs. larger value = more PCs.
 
 req_corr:[0,1], required absolute correlation of factor with PCs in order to be selected.
 
 max_f_cor:[0,1], maximum allowed between-factor correlation.
+
+#### _fit(y, x)_:
+y: df, group of assets to be explained
+
+x: df, group of "factor" assets X used to explain returns of Y
+
 
 ### 3. Eigen Portfolio
 
@@ -144,14 +151,15 @@ price/return:
     ef.return_()
 ```
 
-#### EigenPortfolio(req_exp):
+### Class & Functions:
+#### _EigenPortfolio(req_exp)_:
 req_exp: required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
 
 
-#### fit(df):
-df: pandas DataFrame of asset returns
+#### _fit(df)_:
+df: df, asset returns
 
-#### price(const_rebal) / return_(const_rebal):
+#### _price(const_rebal) / return_(const_rebal)_:
 const_rebal: bool. If False, invest weights of eigen portfolios at period start. However, return correlation
 of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
 
