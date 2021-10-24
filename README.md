@@ -3,7 +3,7 @@ Content
 
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Conditional VaR" or "VaR". 
 
-- [Factor Selection](#factor-selection) ：Select "factors" and build **factor models** to explain returns.
+- [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
   
