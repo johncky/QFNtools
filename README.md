@@ -1,11 +1,11 @@
-
-#Content
+Content
+=============================
 
 - [Efficient Frontier](#efficient-frontier):
   Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 - [Factor Selection](#factor-selection):
   Select "factors" from a group of factor assets (X), ues them to build Factor Models to explain returns of a group of assets (Y).
-- [Eigen Portfolio](#eigen-portfolio): 
+- [Eigen Portfolio](###EigenPortfolio): 
   Find eigen portfolios of a group of assets. Compute their returns and price paths.
 
 #Efficient Frontier
