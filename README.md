@@ -39,19 +39,24 @@ weights:
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
 
-### Class & Functions:
+## Class & Functions:
 #### _EfficientFrontier(risk_measure, alpha)_:
-risk_measure: one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
+risk_measure:
+one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
 
-alpha: percentile to use in "cvar" and "var" calculation
+alpha:
+percentile to use in "cvar" and "var" calculation
 
 #### _EfficientFrontier.fit(df, wbnd, mu_range)_:
 
-df: df, returns of assets
+df:
+df, returns of assets
 
-wbnd: bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
+wbnd:
+bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
 
-mu_range (Tune this): range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible. 
+mu_range (Tune this):
+range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible. 
 
 # Factor Selection
 Selection Process:
@@ -112,21 +117,26 @@ It actually explains index returns pretty well ! (except China A share):
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
-### Class & Functions:
+## Class & Functions:
 #### _FactorSelection(req_exp, req_corr, max_f_cor)_:
-req_exp: [0,1], required explanatory power of the PCs. larger value = more PCs.
+req_exp:
+[0,1], required explanatory power of the PCs. larger value = more PCs.
 
-req_corr:[0,1], required absolute correlation of factor with PCs in order to be selected.
+req_corr:
+[0,1], required absolute correlation of factor with PCs in order to be selected.
 
-max_f_cor:[0,1], maximum allowed between-factor correlation.
+max_f_cor:
+[0,1], maximum allowed between-factor correlation.
 
 #### _fit(y, x)_:
-y: df, group of assets to be explained
+y:
+df, group of assets to be explained
 
-x: df, group of "factor" assets X used to explain returns of Y
+x:
+df, group of "factor" assets X used to explain returns of Y
 
 
-### Eigen Portfolio
+# Eigen Portfolio
 
 Example:
 
@@ -154,19 +164,21 @@ price/return:
     ef.return_()
 ```
 
-### Class & Functions:
+## Class & Functions:
 #### _EigenPortfolio(req_exp)_:
-req_exp: required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
+req_exp:
+required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
 
 
 #### _fit(df)_:
-df: df, asset returns
+df:
+df, asset returns
+
 
 #### _price(const_rebal) / return_(const_rebal)_:
-const_rebal: bool. If False, invest weights of eigen portfolios at period start. However, return correlation
+const_rebal:
+bool. If False, invest weights of eigen portfolios at period start. However, return correlation
 of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
-
-For testing eigen investing strategy (investing in eigen portfolios), use const_rebal=False for checking real return.
 
 
 
