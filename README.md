@@ -176,7 +176,7 @@ dfe.fit(yRet_df, factors_df)
 df, returns of one/more assets (Y), dependent variable in the factor model. If there are more one asset, the dependent variable is a random vector.
 
 **x**:
-df, factors X, independent variable in the factor model.
+df, factors X, independent variables in the factor model.
 
 **factor_pca**:
 bool (Default=False). If True, principal components of X are used as factors. If False, X is used as factors.
