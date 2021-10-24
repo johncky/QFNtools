@@ -87,15 +87,15 @@ class FactorSelection:
 
         removed = list()
         for i in range(len(sort_fac)-1):
-            if i in removed:
+            if sort_fac[i] in removed:
                 continue
             for j in range(i+1, len(sort_fac)):
-                if j in removed:
+                if sort_fac[j] in removed:
                     continue
                 r, p = pearsonr(x.iloc[:, sort_fac[i]], x.iloc[:, sort_fac[j]])
+
                 if abs(r) > self.max_f_cor:
                     removed.append(sort_fac[j])
-
         sort_fac = [x for x in sort_fac if x not in removed]
         self.fac = list(x.columns[sort_fac])
         self.build_model()
@@ -134,7 +134,7 @@ class FactorSelection:
         betas.index = ['intercept'] + list(fac_df.columns)
 
         self.R2 = R2
-        self.betas = betas
+        self.betas = betas.T
 
     def eigen_df(self):
         return self.eigen_port.return_()
@@ -142,7 +142,6 @@ class FactorSelection:
     @property
     def y(self):
         return self.eigen_port.df.copy()
-
 
 class EfficientFrontier:
     def __init__(self, risk_measure, alpha=5):
