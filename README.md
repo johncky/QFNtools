@@ -1,9 +1,11 @@
 Content
 =============================
 
-- [Efficient Frontier](#efficient-frontier)
-- [Factor Selection](#factor-selection)
-- [Eigen Portfolio](#eigen-portfolio)
+- [Efficient Frontier](#efficient-frontier) : Solve Efficient Frontier with risk measures "Variance", "Conditional VaR" or "VaR". 
+
+- [Factor Selection](#factor-selection) ：Select "factors" and build factor models to explain returns.
+
+- [Eigen Portfolio](#eigen-portfolio) ：Find eigen portfolios of a group of assets.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
@@ -54,6 +56,7 @@ Tune this! range of target return to optimize. If this is above / below possible
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
 
 # Factor Selection
+
 Select "factors" from a group of factor assets (X), ues them as predictors to build Factor Models to explain returns of another group (Y).
 
 Selection Process:
