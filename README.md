@@ -7,7 +7,7 @@ Content
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
   
-- [Dynamic Beta](#dynamic-beta) ：Find dynamic betas in a factor model with **Kalman Filter**.
+- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in a factor model with **Kalman Filter**.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
@@ -59,23 +59,18 @@ Tune this! range of target return to optimize. If this is above / below possible
 
 # Factor Selection
 
-Select "factors" from a group of factor assets (X), ues them as predictors to build Factor Models to explain returns of another group (Y).
+Select "factors" from a group of factor assets (X), ues them as independent variables in factor model.
 
-Selection Process:
+      Selection Process:
 
-1. Find Principal Components of a group of assets (Y)
-2. Select factors from another group of factor assets (X) whose absolute correlation with the PCs >= "req_corr". Use them
-   to represent the fictional PCs. (i.e. use real assets return to represent the fictional Eigen portfolios)
+      1. Find Principal Components of Y
 
-3. If between-factor correlation >= "max_f_cor", remove the one that has lower correlation with PCs.
-4. Run linear regression on each asset from Y with the selected factors from X. 
-   
-i.e.
-
-      1. Find PCs of Y return
-      2. Find Xi ~ PCs 
-      2. Limit abs(Corr(Xi, Xj)) <= max_f_cor
-      2. Build yRet ~ B1*X1 + B2*X2 + ...  (standardized returns) 
+      2. Select factors from X whose absolute correlation with the PCs >= "req_corr". Use them
+      to represent PCs of Y. (e.g. use real assets return to represent PCs of Y)
+      
+      3. If between-factor correlation >= "max_f_cor", remove the one that has lower correlation with PCs.
+      
+      4. Build factor model: Y ~ Intercept + (B1 * X1) + (B2 * X2) + ...
 
 ### Example:
 
@@ -104,27 +99,26 @@ df, group of assets to be explained
 **x**:
 df, group of "factor" assets X used to explain returns of Y
 
-### factor model :
+### Results:
    ```python
     fs.betas
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
 
-### model R squared :
 ```python
     fs.R2
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
 
-### selected factors :
+### see selected factors :
    ```python
     fs.factor_df()
 ```
 
 # Eigen Portfolio
-Find eigen portfolios of a group of assets. Compute their returns and price paths.
+Find eigen portfolios of a group of assets X. 
 
 ### Example:
 
@@ -151,11 +145,6 @@ df, asset returns
 bool. If False, invest weights of eigen portfolios at period start. However, return correlation
 of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
 
-```python
-    ef.price()
-    ef.return_()
-```
-
 ### plot :
    ```python
     ep.plot()
@@ -163,7 +152,11 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained ev
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/2_3.png?raw=true)
 
-
+### eigen portfolios:
+```python
+    ef.price()
+    ef.return_()
+```
 
 # Dynamic Beta
 Use **Kalman Filter** to estimate **dynamic beta** for each factor in a factor model.
@@ -196,9 +189,14 @@ int, number of principal components of X to be used as factors. Only useful when
 bool (Default=False). If True, plot result from Kalman Smoother. If False, plot result from Kalman Filter.
 
 ```python
-    dfe.plot()
+    dfe.plot(smoothed=False)
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
 
+```python
+    dfe.plot(smoothed=True)
+```
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_dynamicbetas.png?raw=true)
 
