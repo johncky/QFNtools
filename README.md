@@ -23,14 +23,14 @@ Solve Efficient Frontier of a group of assets. Risk measures can be set to "stan
 ```
 
 ## Class & Functions:
-### _EfficientFrontier(risk_measure, alpha)_ :
+### EfficientFrontier(_risk\_measure_, _alpha_) :
 **risk_measure**:
 one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
 
 **alpha**:
 percentile for "cvar" and "var" calculations
 
-### _fit(df, wbnd, mu_range)_ :
+### fit(_df_, _wbnd_, _mu\_range_) :
 
 **df**:
 df, returns of assets
@@ -41,7 +41,7 @@ bound of weightings; (0,1) means long-only, (None, None) means short-selling all
 **mu_range**:
 Tune this! range of target return to optimize. If this is above / below possible target return achieved, corresponding risk measures are not sensible.
 
-### _plot_ :
+### plot :
    ```python
     ef.plot()
 ```
@@ -49,7 +49,7 @@ Tune this! range of target return to optimize. If this is above / below possible
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_EF(cvar).png?raw=true)
 
 
-### _weights_ :
+### weights :
 ```python
     ef.weights()
 ```
@@ -90,7 +90,7 @@ Example:
 ```
 
 ## Class & Functions:
-### _FactorSelection(req_exp, req_corr, max_f_cor)_ :
+### FactorSelection(_req\_exp_, _req\_corr_, _max\_f\_cor_) :
 **req_exp**:
 [0,1], required explanatory power of the PCs. larger value = more PCs.
 
@@ -100,7 +100,7 @@ Example:
 **max_f_cor**:
 [0,1], maximum allowed between-factor correlation.
 
-### _fit(y, x)_ :
+### fit(_y_, _x_) :
 **y**:
 df, group of assets to be explained
 
@@ -108,25 +108,25 @@ df, group of assets to be explained
 df, group of "factor" assets X used to explain returns of Y
 
 
-### _selected factors_ :
+### selected factors :
    ```python
     fs.factor_df()
 ```
 
-### _factor model_ :
+### factor model :
    ```python
     fs.betas
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
 
-### _selected factors & principal components_:
+### selected factors & principal components:
    ```python
     # see how each "factor" correlated with the PC of equities
     fs.merged_df().corr()
 ```
 
-### _model R squared_ :
+### model R squared :
 ```python
     fs.R2
 ```
@@ -149,17 +149,17 @@ Example:
 ```
 
 ## Class & Functions:
-### _EigenPortfolio(req_exp)_:
+### EigenPortfolio(_req\_exp_):
 **req_exp**:
 required explanatory power, between 0 and 1. This determines the number of Principal Components / Eigen Portfolios
 
 
-### _fit(df)_:
+### fit(_df_):
 **df**:
 df, asset returns
 
 
-### _price(const_rebal) / return\_(const_rebal)_:
+### price(_const\_rebal_) / return\_ (_const\_rebal_):
 **const_rebal**:
 bool. If False, invest weights of eigen portfolios at period start. However, return correlation
 of eigen portfolios will not be exactly zero. If True, weights are maintained every period, returns of eigen portfolios have zero correlations.
@@ -169,7 +169,7 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained ev
     ef.return_()
 ```
 
-### _plot_ :
+### plot :
    ```python
     ep.plot()
 ```
