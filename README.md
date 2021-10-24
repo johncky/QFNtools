@@ -44,7 +44,7 @@ alpha: percentile to use in "cvar" and "var" calculation
 
 #### _EfficientFrontier.fit(df, wbnd, mu_range)_:
 
-df: pandas DataFrame of asset returns
+df: df, returns of assets
 
 wbnd: bound of weightings; (0,1) means long-only, (None, None) means short-selling allowed
 

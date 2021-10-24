@@ -212,9 +212,13 @@ class EfficientFrontier:
         ret = np.dot(self.df, w.T)
         return abs(min(np.percentile(ret, self.alpha), 0))
 
-    def weights(self):
+    def weights(self, drop_zero_col=True, rounding=True):
         df = pd.DataFrame(self.wgt, index=[self.mu_range, self.risk_range], columns=self.df.columns)
-        df.index.names = ['mu', self.risk_measure]
+        df.index.names = ['mu', self.risk_measure ]
+        if rounding:
+            df = np.round(df, 2)
+        if drop_zero_col:
+            df = df.loc[:, (df!=0.0).any(axis=0)]
         return df
 
     def to_csv(self, path):
