@@ -5,6 +5,8 @@ Content
 - [Factor Selection](#factor-selection)
 - [Eigen Portfolio](#eigen-portfolio)
 
+[Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
+
 # Efficient Frontier
 Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 
