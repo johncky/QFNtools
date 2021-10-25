@@ -3,7 +3,7 @@ Content
 
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Conditional VaR" or "VaR". 
 
-- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in a factor model with **Kalman Filter**.
+- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in factor model with **Kalman Filter**.
 
 - [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
@@ -14,7 +14,7 @@ Usage Example:
   Find dynamic beta of an asset in CAPM, in which factor is market return.
   
 - [Dynamic beta(s) in factor model](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_factor_model.ipynb):
-  Find dynamic beta(s) of an/a group of asset(s), in which factors are currencies/commodities/bonds etc.
+  Find dynamic betas in factor models, factors are currencies/commodities/bonds etc.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
