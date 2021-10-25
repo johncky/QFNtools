@@ -253,6 +253,10 @@ class DynamicBeta:
         self.eigen_vec = None
 
     def fit(self, y, x, factor_pca=False, n_pc=3):
+        if type(y) == pd.Series:
+            y = pd.DataFrame(y)
+        if type(x) == pd.Series:
+            x = pd.DataFrame(x)
 
         if factor_pca:
             self.factor_pca = True
@@ -279,7 +283,8 @@ class DynamicBeta:
         if factor_pca:
             cols = ['Intercept'] + ['beta-PC{}'.format(i) for i in range(1, n_pc+1)]
         else:
-            cols=['Intercept'] + ['beta-{}'.format(i) for i in range(1, n_dim_state)]
+            cols=['Intercept'] + list(self.x.columns)
+
         self.kf = kf
         self.filter_state_means, self.filter_state_covs = kf.filter(y)
 
