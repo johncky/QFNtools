@@ -13,8 +13,6 @@ Content
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
 
 
-<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
-
 # Efficient Frontier
 Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 
