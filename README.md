@@ -70,7 +70,7 @@ ef.weights()
 # Dynamic Beta
 Use **Kalman Filter** to estimate **dynamic betas**  in a factor model.
 
-i.e. it models factor exposure beta as state variable and return y as observable variable in a linear state-space model.
+We cast a dynamic factor model into linear state space format (factor loadings as state variable and return y as observable variable), and used Kalman filter & smoother to estimate the loadings.
 
 <img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cbeta_%7Bt%2B1%7D%20%3D%20I%20%5Cbeta_%7Bt%7D%20%2B%20%5Cepsilon_%7Bt%2B1%7D%5C%5C%0A%5Cy_%7Bt%7D%20%3D%20x_%7Bt%7D%5ET%20%5Cbeta_%7Bt%7D%20%2B%20%5Cvarepsilon_%7Bt%2B1%7D%5C%5C%0Ax_%7B0%7D%20~%20N(%5Cmu_0%2C%20%5CSigma_0)%5C%5C%0A%5Cepsilon_%7Bt%7D%20~%20N(0%2C%20Q)%5C%5C%0A%5Cvarepsilon_%7Bt%7D%20~%20N(0%2C%20R)%5C%5C%0A%5Cend%7Balign*%7D%0A">
 
