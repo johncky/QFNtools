@@ -71,7 +71,7 @@ i.e. it models factor exposure beta as state variable and return y as observable
 In Kalman filtering, it finds expectation and covariance of y at time t given new observation of observable variable
 at time t.
 
-In Kalman smoothing, it finds expectation and covariance of y at previous time given all observations up to time T.
+In Kalman smoothing, it finds expectation and covariance of y at previous time given observations up to time T.
 
 Example:
 
