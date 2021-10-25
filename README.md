@@ -16,7 +16,7 @@ Content
 # Efficient Frontier
 Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
 
-<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cmin_%7Bw%7D%20%5Cquad%20%26%20%0ARiskMeasure(w%2C%20X)%5C%5C%20%0A%5Ctextrm%0A%7Bs.t.%7D%20%5Cquad%20%26%20%0A%5Cmu%5E%7BT%7D%20%20w%20%3D%20%5Cmu_%7Btarget%7D%5C%5C%20%5Cquad%20%26%20%0A%5Csum_%7B1%7D%5E%7Bn%7Dw_i%20%3D1%5C%5C%20%0A%261%20%5Cgeq%20w%5Cgeq0%20%20%20%20%5C%5C%0A%5Cend%7Balign*%7D">
+<img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cmin_%7Bw%7D%20%5Cquad%20%26%0ARiskMeasure(w%2C%20X)%5C%5C%0A%5Ctextrm%0A%7Bs.t.%7D%20%5Cquad%20%26%0A%5Cmu%5E%7BT%7D%20%20w%20%3D%20%5Cmu_%7Btarget%7D%5C%5C%20%5Cquad%20%26%0A%5Csum_%7B1%7D%5E%7Bn%7Dw_i%20%3D1%5C%5C%0A%26ub%20%5Cgeq%20w%5Cgeq%20lb%20%20%20%20%5C%5C%0A%5Cend%7Balign*%7D">
 
 ### Example:
 
