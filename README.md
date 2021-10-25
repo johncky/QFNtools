@@ -9,7 +9,7 @@ Content
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
 
-Additional Example:
+Usage Example:
 - [Dynamic beta in CAPM](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_CAPM.ipynb):
   Find dynamic beta of an asset in CAPM, in which factor is market return.
   
