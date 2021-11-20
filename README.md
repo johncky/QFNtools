@@ -1,9 +1,9 @@
 Content
 =============================
 
-- [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Conditional VaR" or "VaR". 
+- [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
-- [Dynamic Beta](#dynamic-beta) ：Find **dynamic betas** in factor model with **Kalman Filter**.
+- [Dynamic Beta](#dynamic-beta) ：Find **betas** in dynamic factor model with **Kalman Filter**.
 
 - [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
@@ -20,7 +20,7 @@ Usage Example:
 
 
 # Efficient Frontier
-Solve Efficient Frontier of a group of assets. Risk measures can be set to "standard deviation", "Conditional VaR", "VaR"
+Solve Efficient Frontier of a group of assets. Risk measures can be "standard deviation", "Entropy",  "Conditional VaR", "VaR"
 
 <img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cmin_%7Bw%7D%20%5Cquad%20%26%0ARiskMeasure(w%2C%20X)%5C%5C%0A%5Ctextrm%0A%7Bs.t.%7D%20%5Cquad%20%26%0A%5Cmu%5E%7BT%7D%20%20w%20%3D%20%5Cmu_%7Btarget%7D%5C%5C%20%5Cquad%20%26%0A%5Csum_%7B1%7D%5E%7Bn%7Dw_i%20%3D1%5C%5C%0A%26ub%20%5Cgeq%20w%5Cgeq%20lb%20%20%20%20%5C%5C%0A%5Cend%7Balign*%7D">
 
@@ -36,10 +36,13 @@ ef.fit(asset_return_df, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
 ## Methods:
 ### \_\_init\_\_(_risk\_measure_, _alpha_) :
 **risk_measure**:
-one of "sd", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
+one of "sd", "entropy", "var", "cvar". choose the risk measure to minimize for target mean return. (note: var is NOT coherent risk measure)
 
 **alpha**:
 percentile for "cvar" and "var" calculations
+
+**entropy_bins**:
+no of bins for calculating entropy,  default = sqrt(n/5)
 
 ### fit(_df_, _wbnd_, _mu\_range_) :
 
@@ -68,9 +71,9 @@ ef.weights()
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
 
 # Dynamic Beta
-Use **Kalman Filter** to estimate **dynamic betas**  in a factor model.
+Use **Kalman Filter** to estimate **betas**  in a dynamic factor model.
 
-We cast a dynamic factor model into linear state space format (factor loadings as state variable and return y as observable variable), and used Kalman filter & smoother to estimate the loadings.
+Cast a dynamic factor model into linear state space form (factor loadings as state variable and return y as observable variable), and used Kalman filter & smoother to estimate the loadings.
 
 <img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cbeta_%7Bt%2B1%7D%20%3D%20I%20%5Cbeta_%7Bt%7D%20%2B%20%5Cepsilon_%7Bt%2B1%7D%5C%5C%0A%5Cy_%7Bt%7D%20%3D%20x_%7Bt%7D%5ET%20%5Cbeta_%7Bt%7D%20%2B%20%5Cvarepsilon_%7Bt%2B1%7D%5C%5C%0Ax_%7B0%7D%20~%20N(%5Cmu_0%2C%20%5CSigma_0)%5C%5C%0A%5Cepsilon_%7Bt%7D%20~%20N(0%2C%20Q)%5C%5C%0A%5Cvarepsilon_%7Bt%7D%20~%20N(0%2C%20R)%5C%5C%0A%5Cend%7Balign*%7D%0A">
 
@@ -123,12 +126,10 @@ dfe.plot(smoothed=True)
 
 Select "factors" from a group of factor assets (X), ues them as independent variables in factor model.
 
-      Selection Process:
-
       1. Find Principal Components of Y
 
       2. Select factors from X whose absolute correlation with the PCs >= "req_corr". Use them
-      to represent PCs of Y. (e.g. use real assets return to represent PCs of Y)
+      to represent PCs of Y. 
       
       3. If between-factor correlation >= "max_f_cor", remove the one that has lower correlation with PCs.
       
@@ -201,12 +202,6 @@ required explanatory power, between 0 and 1. This determines the number of Princ
 **df**:
 df, asset returns
 
-
-### price(_const\_rebal_) / return\_ (_const\_rebal_):
-**const_rebal**:
-bool. If False, invest weights of eigen portfolios at period start. However, correlation
-of eigen portfolios will not be exactly zero. If True, weights are maintained and eigen portfolios have zero correlations.
-
 ### plot :
    ```python
     ep.plot()
@@ -216,6 +211,6 @@ of eigen portfolios will not be exactly zero. If True, weights are maintained an
 
 ### eigen portfolios:
 ```python
-    ef.price()
-    ef.return_()
+    ep.price()
+    ep.return_()
 ```

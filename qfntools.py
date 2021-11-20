@@ -6,48 +6,39 @@ from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from pykalman import KalmanFilter
 from statsmodels.sandbox.tools.tools_pca import pca
+from scipy.stats import entropy
+
 
 class EigenPortfolio:
     def __init__(self, req_exp):
         self.req_exp = req_exp
         self.req_pc = None
-        self.cov = None
         self.df = None
         self.w = None
         self.v = None
         self.norm_wgt = None
-        self.loadings_df = None
 
     def fit(self, df):
         self.df = df
-        self.cov = df.cov()
-        w, v = np.linalg.eig(self.cov.to_numpy())
+        cov = df.cov()
+        w, v = np.linalg.eig(cov.to_numpy())
         self.w = w / w.sum()
         self.v = v
         self.req_pc = np.where(self.w.cumsum() > self.req_exp)[0][0] + 1
-        self.loadings_df = pd.DataFrame(self.v[:, :self.req_pc], index=df.columns, columns=['PC{}'.format(i + 1) for i in range(self.req_pc)])
         self.norm_wgt = pd.DataFrame(self.v[:, :], index=df.columns, columns=['PC{}'.format(i + 1) for i in range(df.shape[1])])
         self.norm_wgt = self.norm_wgt / self.norm_wgt.sum()
 
-    def price(self, const_rebal=False):
-        if const_rebal:
-            port_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
-            port_df = (port_df +1).cumprod()
-        else:
-            port_df = pd.DataFrame(np.dot((1+self.df).cumprod()-1, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
-        port_df = port_df/port_df.iloc[0, :]
+    def price(self):
+        port_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
+        port_df = (port_df +1).cumprod()
         return port_df
 
-    def plot(self, const_rebal = False):
-        port_df = self.price(const_rebal)
+    def plot(self):
+        port_df = self.price()
         port_df.plot()
 
-    def return_(self, const_rebal=False):
-        if const_rebal:
-            ret_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
-        else:
-            ret_df = pd.DataFrame(np.dot((1+self.df).cumprod()-1, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
-            ret_df = ret_df.pct_change()
+    def return_(self):
+        ret_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
         return ret_df
 
 
@@ -68,7 +59,7 @@ class FactorSelection:
         self.eigen_port.fit(y)
         fac_id = list()
         fac_p = list()
-        eigen_port_df = self.eigen_port.return_(True)
+        eigen_port_df = self.eigen_port.return_()
 
         for p in range(eigen_port_df.shape[1]):
             epi = eigen_port_df.iloc[:, p]
@@ -115,7 +106,7 @@ class FactorSelection:
     def build_model(self):
         fac_df = self.factor_df()
         fac_df = (fac_df - fac_df.mean()) / fac_df.std()
-        eqty_df = self.y
+        eqty_df = self.eigen_port.df.copy()
         eqty_df = (eqty_df - eqty_df.mean()) / eqty_df.std()
 
         X = fac_df.to_numpy()
@@ -133,24 +124,18 @@ class FactorSelection:
         betas = pd.DataFrame(betas, index=eqty_df.columns)
         betas = betas.T
         betas.index = ['intercept'] + list(fac_df.columns)
-
         self.R2 = R2
         self.betas = betas.T
 
-    def eigen_df(self):
-        return self.eigen_port.return_()
-
-    @property
-    def y(self):
-        return self.eigen_port.df.copy()
 
 class EfficientFrontier:
-    def __init__(self, risk_measure, alpha=5):
+    def __init__(self, risk_measure, alpha=5, entropy_bins=None):
         self.risk_measure = risk_measure.lower()
         self.df = None
 
         # percentile for VaR
         self.alpha = alpha
+        self.entropy_bins = entropy_bins
 
         # covariance matrix
         self.omega = None
@@ -171,6 +156,8 @@ class EfficientFrontier:
             obj_func = self.cvar
         elif self.risk_measure == 'var':
             obj_func = self.var
+        elif self.risk_measure == 'entropy':
+            obj_func = self.entropy_
         else:
             obj_func = self.sd
 
@@ -197,6 +184,7 @@ class EfficientFrontier:
             risk_range[i] = obj_func(w.x)
 
             wgt.append(np.squeeze(w.x))
+
         wgt = np.array(wgt)
         self.wgt = wgt
         self.mu_range = mu_range
@@ -213,6 +201,17 @@ class EfficientFrontier:
         ret = np.dot(self.df, w.T)
         return abs(min(np.percentile(ret, self.alpha), 0))
 
+    def entropy_(self, w):
+        ret = np.dot(self.df, w.T)
+        ret = pd.Series(ret)
+        if self.entropy_bins is None:
+            bins = int(np.sqrt(ret.shape[0] / 5))
+        else:
+            bins = self.entropy_bins
+        counts = ret.value_counts(bins=bins)
+        h = entropy(counts)
+        return h
+
     def weights(self, drop_zero_col=True, rounding=True):
         df = pd.DataFrame(self.wgt, index=[self.mu_range, self.risk_range], columns=self.df.columns)
         df.index.names = ['mu', self.risk_measure ]
@@ -225,14 +224,24 @@ class EfficientFrontier:
     def to_csv(self, path):
         self.weights().to_csv(path)
 
-    def plot(self):
+    def plot(self, port_only=True):
+        risk_range = self.risk_range
+        mu_range = self.mu_range
         if self.risk_measure == 'cvar':
             label = '{}% Conditional VaR (%)'.format(self.alpha)
         elif self.risk_measure == 'var':
             label = '{}% VaR (%)'.format(self.alpha)
+        elif self.risk_measure == 'entropy':
+            label = 'Entropy'
         else:
+            risk_range = np.sqrt(risk_range)
             label = 'Standard Deviation (%)'
-        plt.plot(np.multiply(self.risk_range, 100),np.multiply(self.mu_range, 100),color="red")
+        if port_only:
+            wgt = self.weights()
+            idx = (wgt!=0).sum(1)!=1
+            risk_range = risk_range[idx]
+            mu_range = mu_range[idx]
+        plt.plot(np.multiply(risk_range, 100),np.multiply(mu_range, 100),color="red")
         plt.xlabel(label,fontsize=10)
         plt.ylabel("Expected Return (%)",fontsize=10)
         plt.title("Efficient Frontier",fontsize=12)
@@ -243,14 +252,8 @@ class DynamicBeta:
         self.kf = None
         self.filter_df = None
         self.smoothed_df = None
-        self.filter_state_means = None
-        self.filter_state_covs = None
-        self.smoothed_state_means = None
-        self.smoothed_state_covs = None
         self.x = None
         self.y = None
-        self.factor_pca = None
-        self.eigen_vec = None
 
     def fit(self, y, x, factor_pca=False, n_pc=3):
         if type(y) == pd.Series:
@@ -259,13 +262,9 @@ class DynamicBeta:
             x = pd.DataFrame(x)
 
         if factor_pca:
-            self.factor_pca = True
             xreduced, factors, evals, evecs = pca(x, keepdim=n_pc)
-            self.eigen_vec = pd.DataFrame(evecs, index=x.columns, columns=['PC{}'.format(i) for i in range(1, n_pc+1)])
             x = pd.DataFrame(factors, index=x.index, columns=['PC{}'.format(i) for i in range(1, n_pc+1)])
 
-        self.x = x
-        self.y = y
         n_dim_obs = y.shape[1]
         n_dim_state = x.shape[1]+1
         ntimestep = y.shape[0]
@@ -283,23 +282,17 @@ class DynamicBeta:
         if factor_pca:
             cols = ['Intercept'] + ['beta-PC{}'.format(i) for i in range(1, n_pc+1)]
         else:
-            cols=['Intercept'] + list(self.x.columns)
+            cols=['Intercept'] + list(x.columns)
 
         self.kf = kf
-        self.filter_state_means, self.filter_state_covs = kf.filter(y)
+        filter_state_means, filter_state_covs = kf.filter(y)
 
-        self.filter_df = pd.DataFrame(self.filter_state_means, index=y.index, columns=cols)
-        self.smoothed_state_means, self.smoothed_state_covs = kf.smooth(y)
-        self.smoothed_df = pd.DataFrame(self.smoothed_state_means, index=y.index, columns=cols)
+        self.filter_df = pd.DataFrame(filter_state_means, index=y.index, columns=cols)
+        smoothed_state_means, smoothed_state_covs = kf.smooth(y)
+        self.smoothed_df = pd.DataFrame(smoothed_state_means, index=y.index, columns=cols)
 
     def plot(self, smoothed=False):
         if smoothed:
             self.smoothed_df.plot()
         else:
             self.filter_df.plot()
-
-    def factor_cov(self, smoothed=True):
-        if smoothed:
-            return self.smoothed_state_covs
-        else:
-            return self.filter_state_covs
