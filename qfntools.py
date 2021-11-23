@@ -19,13 +19,18 @@ class EigenPortfolio:
         self.norm_wgt = None
 
     def fit(self, df):
+
         self.df = df
-        cov = df.cov()
+        std = df.std(0)
+        std_rets = (df - df.mean(0)) / std
+        cov = std_rets.cov()
         w, v = np.linalg.eig(cov.to_numpy())
+
         self.w = w / w.sum()
         self.v = v
         self.req_pc = np.where(self.w.cumsum() > self.req_exp)[0][0] + 1
-        self.norm_wgt = pd.DataFrame(self.v[:, :], index=df.columns, columns=['PC{}'.format(i + 1) for i in range(df.shape[1])])
+        self.norm_wgt = pd.DataFrame(self.v[:, :self.req_pc], index=df.columns, columns=['PC{}'.format(i + 1) for i in range(self.req_pc)])
+        self.norm_wgt = self.norm_wgt.div(std, axis=0)
         self.norm_wgt = self.norm_wgt / self.norm_wgt.sum()
 
     def price(self):
