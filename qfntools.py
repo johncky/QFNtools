@@ -10,32 +10,35 @@ from scipy.stats import entropy
 
 
 class EigenPortfolio:
-    def __init__(self, req_exp):
+    def __init__(self, n_pc, req_exp=None):
         self.req_exp = req_exp
         self.req_pc = None
-        self.df = None
+        self.n_pc = n_pc
+        self.rets = None
         self.w = None
         self.v = None
         self.norm_wgt = None
 
-    def fit(self, df):
+    def fit(self, rets):
 
-        self.df = df
-        std = df.std(0)
-        std_rets = (df - df.mean(0)) / std
+        self.rets = rets
+        std = rets.std(0)
+        std_rets = (rets - rets.mean(0)) / std
         cov = std_rets.cov()
         w, v = np.linalg.eig(cov.to_numpy())
 
         self.w = w / w.sum()
         self.v = v
-        self.req_pc = np.where(self.w.cumsum() > self.req_exp)[0][0] + 1
-        self.norm_wgt = pd.DataFrame(self.v[:, :self.req_pc], index=df.columns, columns=['PC{}'.format(i + 1) for i in range(self.req_pc)])
+        if self.req_exp is not None:
+            self.req_pc = np.where(self.w.cumsum() > self.req_exp)[0][0] + 1
+        else:
+            self.req_pc = self.n_pc
+        self.norm_wgt = pd.DataFrame(self.v[:, :self.req_pc], index=rets.columns, columns=['PC{}'.format(i + 1) for i in range(self.req_pc)])
         self.norm_wgt = self.norm_wgt.div(std, axis=0)
         self.norm_wgt = self.norm_wgt / self.norm_wgt.sum()
 
     def price(self):
-        port_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
-        port_df = (port_df +1).cumprod()
+        port_df = self.return_().add(1).cumprod()
         return port_df
 
     def plot(self):
@@ -43,7 +46,7 @@ class EigenPortfolio:
         port_df.plot()
 
     def return_(self):
-        ret_df = pd.DataFrame(np.dot(self.df, self.norm_wgt.iloc[:, :self.req_pc]), index=self.df.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
+        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt.iloc[:, :self.req_pc]), index=self.rets.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
         return ret_df
 
 
