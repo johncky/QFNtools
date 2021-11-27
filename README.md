@@ -52,8 +52,8 @@ Therefore, our strategies is to:
    r = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
 4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
-5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1_i dollar of PC1, $B2_i dollar 
-of PC_2, ... . Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge.
+5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1 PC1, $B2 
+of PC2, ... etc. Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge the short-sale stock.
 6) Close short when s<0.75. Earn 0.5 s-score value.
 7) Similar strategies to long when s<-1.25.
 8) Since all our systematic risk is hedged with 12 PCs, market risk is 0.
