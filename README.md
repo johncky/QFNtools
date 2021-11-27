@@ -1,6 +1,12 @@
 Content
 =============================
-
+Implemented Strategies:
+- [Market neutral mean reversion arbitrage](#market-neutral-mean-reversion-arb) : 
+Market neutral mean reversion arbitrage, exactly **zero betas**, **5%** max drawdown, **1.04 sharpe** ratio. 
+Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100 + SP500 stocks, 10bps 
+  commission.
+  
+Tools:
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
 - [Dynamic Beta](#dynamic-beta) ：Find **betas** in dynamic factor model with **Kalman Filter**.
@@ -17,6 +23,51 @@ Usage Example:
   Find dynamic betas in factor models, factors are currencies/commodities/bonds etc.
 
 [Jupyter Notebook](https://github.com/johncky/Quantitative-Finance/blob/main/explanatory_notebook): explanatory notebooks
+
+# Market Neutral Arbitrage
+Strategies in the paper ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
+. 
+
+Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
+.
+
+
+Ideas: Decompose stock returns into systematic components, idiosyncratic drift and residuals:
+Model sysmatic factors with 12 principal components:
+
+r = alpha + B1 * PC1 + ... + B12 * PC2  + dX
+
+where X is modelled as mean-reversion process. Because both idiosyncratic drift and systematic return is explained, 
+the residual process dX should be noise driven by mispricing. In the monthly timescale, stock returns should mean revert
+around its equilibrium:
+
+X(t) = k*(m - X(t-1)) dt + sigma dW
+
+where dW is Brownian motion, or white noise. From the model, we can see that when the residual X is above
+mean m, it has negative expected return, and vise versa.
+
+Therefore, our strategies is to:
+1) PCA on SP500 stocks, find the top 12 princiapl components
+2) Run linear regression for each stock ri = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
+3) estimate parameters in X(t): k, m, sigma_equilibrium
+4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
+5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1_i dollar of PC1, $B2_i dollar 
+of PC_2, ... . Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge.
+6) Close short when s<0.75. Earn 0.5 s-score value.
+7) Similar strategies to long when s<-1.25.
+8) Since all our systematic risk is hedged with 12 PCs, market risk is 0.
+
+In reality, ppl from the industry do 4x gross leverage, 2x on long legs, 2x on short legs,
+because the drawdown is so low, we are nearly perfectly hedged (using 12 principal components),
+and the sharpe is so good, ppl just leverage it.
+
+Backtest Result:
+Sharpe: 1.04, CAGR: 11% (4x gross leverage, 2x long legs, 2x short legs)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta?raw=true)
+
 
 
 # Efficient Frontier
