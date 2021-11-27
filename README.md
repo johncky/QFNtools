@@ -9,7 +9,7 @@ Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100
 **Tools**:
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
-- [Dynamic Beta](#dynamic-beta) ：Find **betas** in dynamic factor model with **Kalman Filter**.
+- [Dynamic Beta](#dynamic-beta) ：Find **betas/hedge ratio** in dynamic factor model with **Kalman Filter**.
 
 - [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
