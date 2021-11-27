@@ -55,7 +55,7 @@ Therefore, our strategies is to:
 5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1 PC1, $B2 
 of PC2, ... etc. Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge the short-sale stock.
 6) Close short when s<0.75. Earn 0.5 s-score value.
-7) Similar strategies to long when s<-1.25.
+7) Similar strategy, long when s<-1.25, close long when s>-0.75.
 8) Since all our systematic risk is hedged with 12 PCs, market risk is 0.
 
 In reality, ppl from the industry do 4x gross leverage, 2x on long legs, 2x on short legs,
