@@ -1,12 +1,12 @@
 Content
 =============================
-Implemented Strategies:
+**Implemented Strategies**:
 - [Market neutral mean reversion arbitrage](#market-neutral-mean-reversion-arb) : 
 Market neutral mean reversion arbitrage, exactly **zero betas**, **5%** max drawdown, **1.04 sharpe** ratio. 
 Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100 + SP500 stocks, 10bps 
   commission.
   
-Tools:
+**Tools**:
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
 - [Dynamic Beta](#dynamic-beta) ：Find **betas** in dynamic factor model with **Kalman Filter**.
@@ -15,7 +15,7 @@ Tools:
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
 
-Usage Example:
+**Usage Example**:
 - [Dynamic beta in CAPM](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_CAPM.ipynb):
   Find dynamic beta of an asset in CAPM, in which factor is market return.
   
