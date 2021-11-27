@@ -64,9 +64,9 @@ and the sharpe is so good, ppl just leverage it.
 Backtest Result:
 Sharpe: 1.04, CAGR: 11% (4x gross leverage, 2x long legs, 2x short legs)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta.png?raw=true)
 
 
 
