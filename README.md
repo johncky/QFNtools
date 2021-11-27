@@ -48,7 +48,8 @@ mean m, it has negative expected return, and vise versa.
 
 Therefore, our strategies is to:
 1) PCA on SP500 stocks, find the top 12 principal components
-2) Run linear regression for each stock ri = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
+2) Run linear regression for each stock to determine the hedge ratios: 
+   r = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
 4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
 5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1_i dollar of PC1, $B2_i dollar 
