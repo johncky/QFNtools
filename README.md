@@ -38,7 +38,7 @@ Model sysmatic factors with 12 principal components:
 r = alpha + B1 * PC1 + ... + B12 * PC2  + dX
 
 where X is modelled as mean-reversion process. Because both idiosyncratic drift and systematic return is explained, 
-the residual process dX should be noise driven by mispricing. In the monthly timescale, stock returns should mean revert
+the residual process dX is driven by mis-pricing. In the monthly timescale, stock returns should mean revert
 around its equilibrium:
 
 X(t) = k*(m - X(t-1)) dt + sigma dW
@@ -47,7 +47,7 @@ where dW is Brownian motion, or white noise. From the model, we can see that whe
 mean m, it has negative expected return, and vise versa.
 
 Therefore, our strategies is to:
-1) PCA on SP500 stocks, find the top 12 princiapl components
+1) PCA on SP500 stocks, find the top 12 principal components
 2) Run linear regression for each stock ri = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
 4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
