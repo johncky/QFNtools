@@ -61,6 +61,9 @@ In reality, ppl from the industry do 4x gross leverage, 2x on long legs, 2x on s
 because the drawdown is so low, we are nearly perfectly hedged (using 12 principal components),
 and the sharpe is so good, ppl just leverage it.
 
+Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
+and change the backtrader data feeds path in notebook.
+
 Backtest Result:
 Sharpe: 1.04, CAGR: 11% (4x gross leverage, 2x long legs, 2x short legs)
 
