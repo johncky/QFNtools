@@ -17,10 +17,12 @@ Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100
 
 **Usage Example**:
 - [Dynamic beta in CAPM](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_CAPM.ipynb):
-  Find dynamic beta of an asset in CAPM, in which factor is market return.
+  Find dynamic beta of an asset in CAPM, in which factor is market return. 
+  Or, find dynamic hedge ratio for your pair trading strategies.
   
 - [Dynamic betas in factor model](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_factor_model.ipynb):
-  Find dynamic betas in factor models, factors are currencies/commodities/bonds etc.
+  Find dynamic betas  in factor models, factors are currencies/commodities/bonds etc. 
+  Or, find dynamic hedge ratio for your pair trading strategies.
   
 # Market Neutral Arbitrage
 Strategies in the paper ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
