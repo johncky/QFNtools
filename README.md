@@ -25,7 +25,7 @@ Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100
   Or, find dynamic hedge ratio for your pair trading strategies.
   
 # Market Neutral Arbitrage
-Strategies in the paper ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
+Strategy in the paper ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
 . 
 
 Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
