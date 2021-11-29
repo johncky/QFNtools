@@ -37,8 +37,8 @@ Model sysmatic factors with 12 principal components:
 
 r = alpha + B1 * PC1 + ... + B12 * PC2  + dX
 
-where X is modelled as mean-reversion process. Because both idiosyncratic drift and systematic return is explained, 
-the residual process dX is driven by mis-pricing. In the monthly timescale, stock returns should mean revert
+where X is modelled as mean-reversion process. Because both drift and systematic return is explained, 
+the idiosyncratic residual process dX is driven by mis-pricing, caused by market over-reaction. In the monthly timescale, stock returns should mean revert
 around its equilibrium:
 
 X(t) = k*(m - X(t-1)) dt + sigma dW
