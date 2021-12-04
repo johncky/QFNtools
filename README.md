@@ -31,6 +31,12 @@ Strategy in the paper ["Statistical Arbitrage in the U.S. Equities Market"](http
 Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
 .
 
+Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
+and change the backtrader data feeds path in notebook.
+And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.pdf)
+,[Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
+.
+
 
 Ideas: Decompose stock returns into systematic components, idiosyncratic drift and residuals:
 Model sysmatic factors with 15 principal components:
@@ -61,12 +67,6 @@ of PC2, ... etc. Since PCs are a portfolio of stocks, find the actual value of o
 In reality, ppl from the industry do 4x gross leverage,
 because the drawdown is so low, we are nearly perfectly hedged, 
 and the sharpe is good.
-
-Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
-and change the backtrader data feeds path in notebook.
-And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.pdf)
-,[Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
-.
 
 Backtest Result:
 Sharpe: 1.07, Universe: SP500 + Nasdaq100
