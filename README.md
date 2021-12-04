@@ -33,7 +33,7 @@ Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky
 
 
 Ideas: Decompose stock returns into systematic components, idiosyncratic drift and residuals:
-Model sysmatic factors with 12 principal components:
+Model sysmatic factors with 15 principal components:
 
 r = alpha + B1 * PC1 + ... + B12 * PC2  + dX
 
@@ -47,7 +47,7 @@ where dW is Brownian motion, or white noise. From the model, we can see that whe
 mean m, it has negative expected return, and vise versa.
 
 Therefore, our strategies is to:
-1) PCA on SP500 stocks, find the top 12 principal components
+1) PCA on SP500 + Nasdaq100 stocks, find the top 15 principal components
 2) Run linear regression for each stock to determine the hedge ratios: 
    r = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
@@ -56,11 +56,11 @@ Therefore, our strategies is to:
 of PC2, ... etc. Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge the short-sale stock.
 6) Close short when s<0.75. Earn 0.5 s-score value.
 7) Similar strategy, long when s<-1.25, close long when s>-0.75.
-8) Since all our systematic risk is hedged with 12 PCs, market risk is 0.
+8) Since all our systematic risk is hedged with 15 PCs, market risk is 0.
 
-In reality, ppl from the industry do 4x gross leverage, 2x on long legs, 2x on short legs,
-because the drawdown is so low, we are nearly perfectly hedged (using 12 principal components),
-and the sharpe is so good, ppl just leverage it.
+In reality, ppl from the industry do 4x gross leverage,
+because the drawdown is so low, we are nearly perfectly hedged, 
+and the sharpe is good.
 
 Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
 and change the backtrader data feeds path in notebook.
