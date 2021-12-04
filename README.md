@@ -41,7 +41,7 @@ And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/bl
 Ideas: Decompose stock returns into systematic components, idiosyncratic drift and residuals:
 Model sysmatic factors with 15 principal components:
 
-r = alpha + B1 * PC1 + ... + B12 * PC2  + dX
+r = alpha + B1 * PC1 + ... + B15 * PC15  + dX
 
 where X is modelled as mean-reversion process. Because both drift and systematic return is explained, 
 the idiosyncratic residual process dX is driven by mis-pricing, caused by market over-reaction. In the monthly timescale, stock returns should mean revert
@@ -55,7 +55,7 @@ mean m, it has negative expected return, and vise versa.
 Therefore, our strategies is to:
 1) PCA on SP500 + Nasdaq100 stocks, find the top 15 principal components
 2) Run linear regression for each stock to determine the hedge ratios: 
-   r = alpha + B1 * r_pc1 + ... + B12 * r_pc1  + dX
+   r = alpha + B1 * r_pc1 + ... + B15 * r_pc15  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
 4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
 5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1 PC1, $B2 
