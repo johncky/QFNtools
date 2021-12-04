@@ -64,14 +64,16 @@ and the sharpe is so good, ppl just leverage it.
 
 Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
 and change the backtrader data feeds path in notebook.
+And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/mean_reversion_arb.pdf)
+,[Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/mean_reversion_result.html)
+.
 
 Backtest Result:
-Sharpe: 1.04, CAGR: 11% (4x gross leverage, 2x long legs, 2x short legs)
+Sharpe: 1.07 (4x gross leverage, 2x long legs, 2x short legs), Universe: SP500+Nasdaq100
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta.png?raw=true)
-
 
 
 # Efficient Frontier
