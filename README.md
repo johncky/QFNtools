@@ -33,8 +33,7 @@ Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky
 
 Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
 and change the backtrader data feeds path in notebook.
-And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.pdf)
-,[Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
+And also: [Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
 .
 
 
