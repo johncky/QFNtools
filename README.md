@@ -2,8 +2,8 @@ Content
 =============================
 **Implemented Strategies**:
 - [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) : 
-Market neutral mean reversion arbitrage, exactly **zero betas**, **15.6%** max drawdown, **1.04 sharpe** ratio. 
-Backtested using **backtrader**, from 2013-01-01 to 2021-11-18, using Nasdaq 100 + SP500 stocks, 10bps 
+Market neutral mean reversion arbitrage, **1.04 sharpe** ratio. 
+Backtested using **backtrader**, from 2013-01-01 to 2021-06-01, using {Nasdaq 100 + SP500} stocks, 10bps 
   commission.
   
 **Tools**:
