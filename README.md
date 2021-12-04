@@ -69,7 +69,7 @@ And also: [PowerPoint slides](https://github.com/johncky/Quantitative-Finance/bl
 .
 
 Backtest Result:
-Sharpe: 1.07 (4x gross leverage, 2x long legs, 2x short legs), Universe: SP500+Nasdaq100
+Sharpe: 1.07, Universe: SP500 + Nasdaq100
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
 
