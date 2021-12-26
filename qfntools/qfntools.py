@@ -5,37 +5,26 @@ import statsmodels.api as sm
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from pykalman import KalmanFilter
-from statsmodels.sandbox.tools.tools_pca import pca
+from sklearn.decomposition import PCA
 from scipy.stats import entropy
 
-
 class EigenPortfolio:
-    def __init__(self, n_pc, req_exp=None):
-        self.req_exp = req_exp
-        self.req_pc = None
+    def __init__(self, n_pc):
         self.n_pc = n_pc
         self.rets = None
-        self.w = None
-        self.v = None
         self.norm_wgt = None
+        self.explained_variance_ratio = None
 
     def fit(self, rets):
-
         self.rets = rets
         std = rets.std(0)
         std_rets = (rets - rets.mean(0)) / std
-        cov = std_rets.cov()
-        w, v = np.linalg.eig(cov.to_numpy())
-
-        self.w = w / w.sum()
-        self.v = v
-        if self.req_exp is not None:
-            self.req_pc = np.where(self.w.cumsum() > self.req_exp)[0][0] + 1
-        else:
-            self.req_pc = self.n_pc
-        self.norm_wgt = pd.DataFrame(self.v[:, :self.req_pc], index=rets.columns, columns=['PC{}'.format(i + 1) for i in range(self.req_pc)])
-        self.norm_wgt = self.norm_wgt.div(std, axis=0)
-        self.norm_wgt = self.norm_wgt / self.norm_wgt.sum()
+        pca = PCA(n_components = self.n_pc, random_state=1)
+        pca.fit(std_rets)
+        norm_wgt = pd.DataFrame(pca.components_, columns=rets.columns,index=['PC{}'.format(i + 1) for i in range(self.n_pc)]).T
+        norm_wgt = norm_wgt.div(std, axis=0)
+        self.norm_wgt = norm_wgt / norm_wgt.sum()
+        self.explained_variance_ratio = pca.explained_variance_ratio_
 
     def price(self):
         port_df = self.return_().add(1).cumprod()
@@ -46,7 +35,7 @@ class EigenPortfolio:
         port_df.plot()
 
     def return_(self):
-        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt.iloc[:, :self.req_pc]), index=self.rets.index, columns=['PC{}'.format(i+1) for i in range(self.req_pc)])
+        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt), index=self.rets.index, columns=['PC{}'.format(i+1) for i in range(self.n_pc)])
         return ret_df
 
 

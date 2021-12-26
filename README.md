@@ -1,10 +1,7 @@
 Content
 =============================
 **Implemented Strategies**:
-- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) : 
-Market neutral mean reversion arbitrage, **1.04 sharpe** ratio. 
-Backtested using **backtrader**, from 2013-01-01 to 2021-06-01, using {Nasdaq 100 + SP500} stocks, 10bps 
-  commission.
+- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
   
 **Tools**:
 - [Efficient Frontier](#efficient-frontier) : Solve **Efficient Frontier** with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
@@ -14,61 +11,46 @@ Backtested using **backtrader**, from 2013-01-01 to 2021-06-01, using {Nasdaq 10
 - [Factor Selection](#factor-selection) ：Select "factors" and build **factor model** to explain returns.
 
 - [Eigen Portfolio](#eigen-portfolio) ：Find **eigen portfolios** of a group of assets.
-
-**Usage Example**:
-- [Dynamic beta in CAPM](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_CAPM.ipynb):
-  Find dynamic beta of an asset in CAPM, in which factor is market return. 
-  Or, find dynamic hedge ratio for your pair trading strategies.
-  
-- [Dynamic betas in factor model](https://github.com/johncky/Quantitative-Finance/blob/main/example/Dynamic_beta_in_factor_model.ipynb):
-  Find dynamic betas  in factor models, factors are currencies/commodities/bonds etc. 
-  Or, find dynamic hedge ratio for your pair trading strategies.
-  
+ 
 # Market Neutral Arbitrage
-Strategy in the paper ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
+Backtested using backtrader, from 2013-01-01 to 2021-06-01, using {Nasdaq 100 + SP500} stocks, 10bps
+commission. Result: **0** beta with Nasdaq & SP500, sharpe **1.04**
+
+Paper: ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
 . 
 
-Implementation notebook: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
+Implementation: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
 .
 
-Stock data downloaded from Yahoo Finance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
-and change the backtrader data feeds path in notebook.
-And also: [Full Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
+Stock data from YahooFinance, [download here](https://github.com/johncky/Quantitative-Finance/blob/main/data/mean_reversion_data.zip)
+
+And, [Performance Report](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_result.html)
 .
 
-
-Ideas: Decompose stock returns into systematic components, idiosyncratic drift and residuals:
-Model sysmatic factors with 15 principal components:
+Summary: Decompose stock returns into systematic components, idiosyncratic drift and residuals, model sysmatic factors with 15 principal components:
 
 r = alpha + B1 * PC1 + ... + B15 * PC15  + dX
 
-where X is modelled as mean-reversion process. Because both drift and systematic return is explained, 
-the idiosyncratic residual process dX is driven by mis-pricing, caused by market over-reaction. In the monthly timescale, stock returns should mean revert
-around its equilibrium:
+where X (residuals) is modelled as mean-reversion process:
 
-X(t) = k*(m - X(t-1)) dt + sigma dW
+dX = k*(m - X) dt + sigma dW
 
-where dW is Brownian motion, or white noise. From the model, we can see that when the residual X is above
-mean m, it has negative expected return, and vise versa.
+When residuals X > m, dX has -ve expectation. When X < m, dX has +ve expectation
 
-Therefore, our strategies is to:
+Strategies:
 1) PCA on SP500 + Nasdaq100 stocks, find the top 15 principal components
-2) Run linear regression for each stock to determine the hedge ratios: 
+2) Run linear regression on each stock with the PCs to determine their hedge ratios: 
    r = alpha + B1 * r_pc1 + ... + B15 * r_pc15  + dX
 3) estimate parameters in X(t): k, m, sigma_equilibrium
-4) calculate the standardized s-score of the stock's residual s = (X - m) / sigma_eq
-5) if s > 1.25, short stock, for every $1 dollar stock we short, hedge with $B1 PC1, $B2 
-of PC2, ... etc. Since PCs are a portfolio of stocks, find the actual value of other stocks to hedge the short-sale stock.
-6) Close short when s<0.75. Earn 0.5 s-score value.
-7) Similar strategy, long when s<-1.25, close long when s>-0.75.
-8) Since all our systematic risk is hedged with 15 PCs, market risk is 0.
+4) calculate the standardized s-score: s = (X - m) / sigma_eq
+5) if s > 1.25, short stock, hedge with $B1 PC1, $B2 
+of PC2, ... etc.  (each PC is a portfolio of every stocks).
+6) Close short when s<0.75. 
+7) Similarly, long when s<-1.25, close long when s>-0.75.
 
-In reality, ppl from the industry do 4x gross leverage,
-because the drawdown is so low, we are nearly perfectly hedged, 
-and the sharpe is good.
+Maintain a 4x gross leverage overall.
 
 Backtest Result:
-Sharpe: 1.07, Universe: SP500 + Nasdaq100
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
 
@@ -83,10 +65,10 @@ Solve Efficient Frontier of a group of assets. Risk measures can be "standard de
 ### Example:
 
 ```python
-from qfntools import EfficientFrontier
+from qfntools.qfntools import EfficientFrontier
 
 ef = EfficientFrontier(risk_measure='cvar', alpha=5)
-ef.fit(asset_return_df, wbnd=(0,1), mu_range=np.arange(0.0055,0.013,0.0002))
+ef.fit(asset_return_df, wbnd=(0, 1), mu_range=np.arange(0.0055, 0.013, 0.0002))
 ```
 
 ## Methods:
@@ -141,7 +123,7 @@ In Kalman smoothing, it finds expectation and covariance of y at previous time g
 Example:
 
 ```python
-from qfntools import DynamicBeta
+from qfntools.qfntools import DynamicBeta
 
 dfe = DynamicBeta()
 dfe.fit(yRet_df, factors_df)
@@ -194,7 +176,7 @@ Select "factors" from a group of factor assets (X), ues them as independent vari
 ### Example:
 
 ```python
-from qfntools import FactorSelection
+from qfntools.qfntools import FactorSelection
 
 fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
 fs.fit(y=equity_return_df, x=factor_df)
@@ -242,7 +224,7 @@ Find eigen portfolios of a group of assets X.
 ### Example:
 
 ```python
-from qfntools import EigenPortfolio
+from qfntools.qfntools import EigenPortfolio
 
 ep = EigenPortfolio(req_exp=0.8)
 ep.fit(asset_return_df)
