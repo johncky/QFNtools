@@ -8,122 +8,6 @@ from pykalman import KalmanFilter
 from sklearn.decomposition import PCA
 from scipy.stats import entropy
 
-class EigenPortfolio:
-    def __init__(self, n_pc):
-        self.n_pc = n_pc
-        self.rets = None
-        self.norm_wgt = None
-        self.explained_variance_ratio = None
-
-    def fit(self, rets):
-        self.rets = rets
-        std = rets.std(0)
-        std_rets = (rets - rets.mean(0)) / std
-        pca = PCA(n_components = self.n_pc, random_state=1)
-        pca.fit(std_rets)
-        norm_wgt = pd.DataFrame(pca.components_, columns=rets.columns,index=['PC{}'.format(i + 1) for i in range(self.n_pc)]).T
-        norm_wgt = norm_wgt.div(std, axis=0)
-        self.norm_wgt = norm_wgt / norm_wgt.sum()
-        self.explained_variance_ratio = pca.explained_variance_ratio_
-
-    def price(self):
-        port_df = self.return_().add(1).cumprod()
-        return port_df
-
-    def plot(self):
-        port_df = self.price()
-        port_df.plot()
-
-    def return_(self):
-        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt), index=self.rets.index, columns=['PC{}'.format(i+1) for i in range(self.n_pc)])
-        return ret_df
-
-
-class FactorSelection:
-    def __init__(self, req_exp, req_corr, max_f_cor):
-        self.req_exp = req_exp
-        self.req_corr = req_corr
-        self.max_f_cor = max_f_cor
-        self.eigen_port = None
-        self.fac = list()
-        self.x = None
-        self.R2 = None
-        self.betas = None
-
-    def fit(self, y, x):
-        self.x = x
-        self.eigen_port = EigenPortfolio(self.req_exp)
-        self.eigen_port.fit(y)
-        fac_id = list()
-        fac_p = list()
-        eigen_port_df = self.eigen_port.return_()
-
-        for p in range(eigen_port_df.shape[1]):
-            epi = eigen_port_df.iloc[:, p]
-            for f in range(x.shape[1]):
-                if f in fac_id:
-                    continue
-                r, p = pearsonr(x.iloc[:, f], epi)
-                if abs(r) >= self.req_corr:
-                    fac_id.append(f)
-                    fac_p.append(abs(p))
-
-        sort_fac = [x for _, x in sorted(zip(fac_p, fac_id))]
-
-        if len(fac_id) == 0:
-            print('All factors < req_corr')
-            return
-
-        removed = list()
-        for i in range(len(sort_fac)-1):
-            if sort_fac[i] in removed:
-                continue
-            for j in range(i+1, len(sort_fac)):
-                if sort_fac[j] in removed:
-                    continue
-                r, p = pearsonr(x.iloc[:, sort_fac[i]], x.iloc[:, sort_fac[j]])
-
-                if abs(r) > self.max_f_cor:
-                    removed.append(sort_fac[j])
-        sort_fac = [x for x in sort_fac if x not in removed]
-        self.fac = list(x.columns[sort_fac])
-        self.build_model()
-
-    def merged_df(self):
-        eigen_port_df = self.eigen_port.return_(True)
-        merged_df = pd.concat([self.factor_df(), eigen_port_df], axis=1)
-        return merged_df
-
-    def factor_df(self):
-        return self.x.copy()[self.fac]
-
-    def plot_eigen(self, const_rebal = False):
-        self.eigen_port.plot( const_rebal)
-
-    def build_model(self):
-        fac_df = self.factor_df()
-        fac_df = (fac_df - fac_df.mean()) / fac_df.std()
-        eqty_df = self.eigen_port.df.copy()
-        eqty_df = (eqty_df - eqty_df.mean()) / eqty_df.std()
-
-        X = fac_df.to_numpy()
-        X = sm.add_constant(X)
-        R2 = list()
-        betas = list()
-        # Run regression on Equity returns using selected factors as predictors
-        for i in range(eqty_df.shape[1]):
-            model = sm.OLS(endog=eqty_df.iloc[:, i], exog=X)
-            result = model.fit()
-            R2.append(result.rsquared)
-            betas.append(result.params)
-
-        R2 = pd.DataFrame(R2, index=eqty_df.columns, columns=['R squared'])
-        betas = pd.DataFrame(betas, index=eqty_df.columns)
-        betas = betas.T
-        betas.index = ['intercept'] + list(fac_df.columns)
-        self.R2 = R2
-        self.betas = betas.T
-
 
 class EfficientFrontier:
     def __init__(self, risk_measure, alpha=5, entropy_bins=None):
@@ -293,3 +177,122 @@ class DynamicBeta:
             self.smoothed_df.plot()
         else:
             self.filter_df.plot()
+
+
+
+class EigenPortfolio:
+    def __init__(self, n_pc):
+        self.n_pc = n_pc
+        self.rets = None
+        self.norm_wgt = None
+        self.explained_variance_ratio = None
+
+    def fit(self, rets):
+        self.rets = rets
+        std = rets.std(0)
+        std_rets = (rets - rets.mean(0)) / std
+        pca = PCA(n_components = self.n_pc, random_state=1)
+        pca.fit(std_rets)
+        norm_wgt = pd.DataFrame(pca.components_, columns=rets.columns,index=['PC{}'.format(i + 1) for i in range(self.n_pc)]).T
+        norm_wgt = norm_wgt.div(std, axis=0)
+        self.norm_wgt = norm_wgt / norm_wgt.sum()
+        self.explained_variance_ratio = pca.explained_variance_ratio_
+
+    def price(self):
+        port_df = self.return_().add(1).cumprod()
+        return port_df
+
+    def plot(self):
+        port_df = self.price()
+        port_df.plot()
+
+    def return_(self):
+        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt), index=self.rets.index, columns=['PC{}'.format(i+1) for i in range(self.n_pc)])
+        return ret_df
+
+
+class FactorSelection:
+    def __init__(self, req_exp, req_corr, max_f_cor):
+        self.req_exp = req_exp
+        self.req_corr = req_corr
+        self.max_f_cor = max_f_cor
+        self.eigen_port = None
+        self.fac = list()
+        self.x = None
+        self.R2 = None
+        self.betas = None
+
+    def fit(self, y, x):
+        self.x = x
+        self.eigen_port = EigenPortfolio(self.req_exp)
+        self.eigen_port.fit(y)
+        fac_id = list()
+        fac_p = list()
+        eigen_port_df = self.eigen_port.return_()
+
+        for p in range(eigen_port_df.shape[1]):
+            epi = eigen_port_df.iloc[:, p]
+            for f in range(x.shape[1]):
+                if f in fac_id:
+                    continue
+                r, p = pearsonr(x.iloc[:, f], epi)
+                if abs(r) >= self.req_corr:
+                    fac_id.append(f)
+                    fac_p.append(abs(p))
+
+        sort_fac = [x for _, x in sorted(zip(fac_p, fac_id))]
+
+        if len(fac_id) == 0:
+            print('All factors < req_corr')
+            return
+
+        removed = list()
+        for i in range(len(sort_fac)-1):
+            if sort_fac[i] in removed:
+                continue
+            for j in range(i+1, len(sort_fac)):
+                if sort_fac[j] in removed:
+                    continue
+                r, p = pearsonr(x.iloc[:, sort_fac[i]], x.iloc[:, sort_fac[j]])
+
+                if abs(r) > self.max_f_cor:
+                    removed.append(sort_fac[j])
+        sort_fac = [x for x in sort_fac if x not in removed]
+        self.fac = list(x.columns[sort_fac])
+        self.build_model()
+
+    def merged_df(self):
+        eigen_port_df = self.eigen_port.return_(True)
+        merged_df = pd.concat([self.factor_df(), eigen_port_df], axis=1)
+        return merged_df
+
+    def factor_df(self):
+        return self.x.copy()[self.fac]
+
+    def plot_eigen(self, const_rebal = False):
+        self.eigen_port.plot( const_rebal)
+
+    def build_model(self):
+        fac_df = self.factor_df()
+        fac_df = (fac_df - fac_df.mean()) / fac_df.std()
+        eqty_df = self.eigen_port.df.copy()
+        eqty_df = (eqty_df - eqty_df.mean()) / eqty_df.std()
+
+        X = fac_df.to_numpy()
+        X = sm.add_constant(X)
+        R2 = list()
+        betas = list()
+        # Run regression on Equity returns using selected factors as predictors
+        for i in range(eqty_df.shape[1]):
+            model = sm.OLS(endog=eqty_df.iloc[:, i], exog=X)
+            result = model.fit()
+            R2.append(result.rsquared)
+            betas.append(result.params)
+
+        R2 = pd.DataFrame(R2, index=eqty_df.columns, columns=['R squared'])
+        betas = pd.DataFrame(betas, index=eqty_df.columns)
+        betas = betas.T
+        betas.index = ['intercept'] + list(fac_df.columns)
+        self.R2 = R2
+        self.betas = betas.T
+
