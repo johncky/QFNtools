@@ -262,7 +262,7 @@ bandwidth multiplier for kernel regression of BS implied volatility. bandwidth =
 
 plot:
 bool, if true plot RND.
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/IV_int_rnd_plot.png?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/IV_int_rnd_plot.png | width=100)
 
 #### fit_mixture_lognormal(K, _plot_):
 K:
@@ -270,7 +270,9 @@ number of lognormal distribution in the mixture model. default 2.
 
 plot:
 bool, if true plot RND.
+
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/mixture_rnd_plot.png?raw=true)
+
 
 ### Results:
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/rnd_shift.jpg?raw=true)
