@@ -2,16 +2,11 @@ import pandas as pd
 import numpy as np
 from scipy.stats import pearsonr
 import statsmodels.api as sm
-from scipy.optimize import minimize
 import matplotlib.pyplot as plt
 from pykalman import KalmanFilter
 from sklearn.decomposition import PCA
 from scipy.stats import entropy
-import requests
-from bs4 import BeautifulSoup
-from io import StringIO
 from statsmodels.sandbox.tools.tools_pca import pca
-
 import requests
 from io import StringIO
 from bs4 import BeautifulSoup
@@ -373,7 +368,7 @@ class HsiRND:
         self.fitted_models['BLA'] = fixed_pmf
         return fixed_pmf
 
-    # given a density in pd.Series with index=strikes, values=pmf, it remove negative pmf and interpolate cmf using monotonic interpolation
+    # given pd.Series ith index=strikes, values=pmf, it remove (-ve) vals and interpolate cmf
     def enforce_cmf_monotonicity(self, density):
         strikes = density.index
         cmf = density.cumsum()
@@ -479,6 +474,7 @@ class HsiRND:
         result = soup.findAll('td', text=True)
 
         flag = False
+        rf = 0
         for item in result:
             if flag:
                 rf = float(item.text)
@@ -487,9 +483,6 @@ class HsiRND:
                 flag = True
         return rf / 100
 
-    def select_maturity(self, ascending_order, evaluation_steps=5, min_hsi=5, max_hsi=100000):
-        self.create_payoff_matirx()
-        self.forward_price = self.S0 * np.exp(self.rf * self.T)
 
     def download_option_data(self):
         url = 'https://www.hkex.com.hk/eng/stat/dmstat/dayrpt/hsio{}.htm'.format(self.date[2:])
