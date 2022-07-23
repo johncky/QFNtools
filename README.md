@@ -5,7 +5,7 @@ Content
 - [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
 - [HSI Risk Neutral Density](#hsi-risk-neutral-density)
 - [Option Pricing Under CEV Model using Non-uniform Discretization](#option-pricing-under-cev-model-using-non-uniform-discretization-fdm)
-- [Option Pricing using Monte Carlo Simulation & Binomial Trees]()
+- [Option Pricing using Monte Carlo Simulation & Binomial Trees](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
 
 **Tools**:
 - [Efficient Frontier](#efficient-frontier) : Solve Efficient Frontier with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
