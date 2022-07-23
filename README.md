@@ -4,7 +4,7 @@ Content
 **Reports**:
 - [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
 - [HSI Risk Neutral Density](#hsi-risk-neutral-density)
-- [Option Pricing Under CEV Model using Non-uniform Discretization](#option-pricing-under-cev-model-using-non-uniform-discretization-fdm)
+- [Option Pricing Under CEV Model using FDN with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
 - [Option Pricing using Monte Carlo Simulation & Binomial Trees](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
 
 **Tools**:
@@ -279,7 +279,7 @@ bool, if true plot RND.
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/diff_mat_rnd.jpg?raw=true)
 
 
-## Option Pricing under CEV model using non-uniform discretization FDM
+## Option Pricing under CEV model using FDM with non-uniform discretization
 A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
