@@ -279,6 +279,7 @@ bool, if true plot RND.
 
 ## Option Pricing under CEV model using non-uniform discretization FDM
 A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
+
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
 
 CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
@@ -292,10 +293,13 @@ discretization.
 
 
 ### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png.png?raw=true)
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png.png?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
 
 When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges 
-to Black-Scholes Formula price.
+to Black-Scholes Formula price:
+
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)
