@@ -4,7 +4,7 @@ Content
 **Reports**:
 - [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
 - [HSI Risk Neutral Density](#hsi-risk-neutral-density)
-- [Option Pricing Under CEV Model using FDN with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
+- [Option Pricing Under CEV Model using FDM with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
 - [Option Pricing using Monte Carlo Simulation & Binomial Trees](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
 
 **Tools**:
