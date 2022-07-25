@@ -18,6 +18,92 @@ Content
 
 - [Risk Neutral Density](#hsi-risk-neutral-density) ：Download option data from HKEX and find underlying risk-neutral densities.
 
+## HSI Risk Neutral Density
+A variety of methods have been devised to extract risk-neutral density (RND) from European option prices.
+These extracted RND can be used to track changes in expected moments of terminal price and
+gauge changes in market sentiment.
+
+Details of each method are in
+[Project Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/rnd_project.pdf)
+
+
+
+```python
+from qfntools.qfntools import HsiRND
+
+rnd = HsiRND(date='20220721', maturity_id=3)
+rnd.fit_BLA()
+rnd.fit_IV()
+rnd.fit_mixture_lognormal(K=2)
+```
+
+#### \_\_init\_\_(_date_, _maturity_id_, _option_type_):
+date:
+date of option prices, in the format "yyyymmdd"
+
+maturity_id:
+integer from 0 to around 11, represents maturity of options. 0 indicates the closest maturity options, 1 indicates
+the second closest maturity etc
+
+option_type:
+"C" or "P" (call or put options). Indicates the options to use for the Breeden and Litzenberger Approach
+
+#### fit_BLA(_plot_):
+plot:
+bool, if true plot RND.
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BLA_rnd_plot.png?raw=true)
+
+
+#### fit_IV(wb_mult, _plot_):
+wb_mult:
+bandwidth multiplier for kernel regression of BS implied volatility. bandwidth = wb_mult * 200 hsi points.
+
+plot:
+bool, if true plot RND.
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/IV_int_rnd_plot.png)
+
+#### fit_mixture_lognormal(K, _plot_):
+K:
+number of lognormal distribution in the mixture model. default 2.
+
+plot:
+bool, if true plot RND.
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/mixture_rnd_plot.png?raw=true)
+
+
+### Results:
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/rnd_shift.jpg?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/diff_mat_rnd.jpg?raw=true)
+
+
+## Option Pricing under CEV model using FDM with non-uniform discretization
+A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
+
+CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
+In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
+
+(Note: when alpha=sigma, Beta=1, CEV becomes the famous Black-Scholes Model)
+
+In this [Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
+, we assumes stock dynamics to follow CEV, and price European options using Crank–Nicolson method with a non-uniform
+discretization.
+
+
+### Results:
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
+
+When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges
+to Black-Scholes Formula price:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)
 
 ## Efficient Frontier
 Solve Efficient Frontier of assets. Risk measures can be "standard deviation", "Entropy",  "Conditional VaR", "VaR"
@@ -219,90 +305,3 @@ Maintain a 4x gross leverage.
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta.png?raw=true)
-
-## HSI Risk Neutral Density
-A variety of methods have been devised to extract risk-neutral density (RND) from European option prices.
-These extracted RND can be used to track changes in expected moments of terminal price and
-gauge changes in market sentiment.
-
-Details of each method are in 
-[Project Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/rnd_project.pdf)
-
-
-
-```python
-from qfntools.qfntools import HsiRND
-
-rnd = HsiRND(date='20220721', maturity_id=3)
-rnd.fit_BLA()
-rnd.fit_IV()
-rnd.fit_mixture_lognormal(K=2)
-```
-
-#### \_\_init\_\_(_date_, _maturity_id_, _option_type_):
-date:
-date of option prices, in the format "yyyymmdd"
-
-maturity_id:
-integer from 0 to around 11, represents maturity of options. 0 indicates the closest maturity options, 1 indicates 
-the second closest maturity etc
-
-option_type:
-"C" or "P" (call or put options). Indicates the options to use for the Breeden and Litzenberger Approach
-
-#### fit_BLA(_plot_):
-plot:
-bool, if true plot RND.
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BLA_rnd_plot.png?raw=true)
-
-
-#### fit_IV(wb_mult, _plot_):
-wb_mult:
-bandwidth multiplier for kernel regression of BS implied volatility. bandwidth = wb_mult * 200 hsi points.
-
-plot:
-bool, if true plot RND.
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/IV_int_rnd_plot.png)
-
-#### fit_mixture_lognormal(K, _plot_):
-K:
-number of lognormal distribution in the mixture model. default 2.
-
-plot:
-bool, if true plot RND.
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/mixture_rnd_plot.png?raw=true)
-
-
-### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/rnd_shift.jpg?raw=true)
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/diff_mat_rnd.jpg?raw=true)
-
-
-## Option Pricing under CEV model using FDM with non-uniform discretization
-A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
-
-CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
-In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
-
-(Note: when alpha=sigma, Beta=1, CEV becomes the famous Black-Scholes Model)
-
-In this [Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
-, we assumes stock dynamics to follow CEV, and price European options using Crank–Nicolson method with a non-uniform
-discretization. 
-
-
-### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
-
-When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges 
-to Black-Scholes Formula price:
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)
