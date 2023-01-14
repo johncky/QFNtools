@@ -12,7 +12,7 @@ Content
 - [Bayesian Linear Regression with Bayesian Model Averaging](#Bayesian-linear-regression-with-Bayesian-model-averaging ) ： Run Bayesian linear regression
 with Bayesian model averaging, sample from posterior distri
 
-- [Pricing European options under CEV model with non-uniform Crank-Nicolson Method](#bayesian-model-averaging) ： Run Bayesian linear regression
+- [Option Pricing under CEV model](#Option-Pricing-under-CEV-model) ： Run Bayesian linear regression
 with Bayesian model averaging, sample from posterior distri
 - 
 **Other stuff**:
@@ -116,7 +116,7 @@ samples = BMA.sample_posterior(10000) # model & parameter (betas, sigma2) sample
 ```python
 BMA.diagnostic()
 ```
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BMA_diagnostic?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BMA_diagnostic.png?raw=true)
 
 
 
@@ -178,7 +178,9 @@ dfe.plot(smoothed=False)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
 
-## Option Pricing under CEV model using FDM with non-uniform discretization
+## Option Pricing under CEV model
+Price European options under CEV model using FDM with non-uniform discretization.
+
 A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
