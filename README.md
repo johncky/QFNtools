@@ -1,155 +1,155 @@
 Content
 =============================
 
-**Reports**:
-- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
-- [HSI Risk Neutral Density](#hsi-risk-neutral-density)
-- [Option Pricing Under CEV Model using FDM with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
-- [Option Pricing using Monte Carlo Simulation & Binomial Trees](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
 
-**Tools**:
+**Some functions**:
 - [Efficient Frontier](#efficient-frontier) : Solve Efficient Frontier with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
 - [Dynamic Beta](#dynamic-beta) ：Find betas/hedge ratio in dynamic factor model with Kalman Filter.
 
-- [Factor Selection](#factor-selection) ：Select "factors" and build factor model to explain returns.
-
-- [Eigen Portfolio](#eigen-portfolio) ：Find eigen portfolios of assets.
-
 - [Risk Neutral Density](#hsi-risk-neutral-density) ：Download option data from HKEX and find underlying risk-neutral densities.
 
-## HSI Risk Neutral Density
-A variety of methods have been devised to extract risk-neutral density (RND) from European option prices.
-These extracted RND can be used to track changes in expected moments of terminal price and
-gauge changes in market sentiment.
+- [Bayesian Linear Regression with Bayesian Model Averaging](#bayesian-model-averaging) ： Run Bayesian linear regression
+with Bayesian model averaging, sample from posterior distri
 
-Details of each method are in
-[Project Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/rnd_project.pdf)
+- [Pricing European options under CEV model with non-uniform Crank-Nicolson Method](#bayesian-model-averaging) ： Run Bayesian linear regression
+with Bayesian model averaging, sample from posterior distri
+- 
+**Other stuff**:
+- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
+- [Option Pricing Under CEV Model using FDM with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
 
+data = pd.read_table('http://www2.stat.duke.edu/~pdh10/FCBS/Exercises/azdiabetes.dat', sep="\s+").drop(columns=['diabetes'])
+data.insert(0,'intercept', 1)
 
-
+### Bayesian Linear Regression
+Run Bayesian linear regression with different priors
 ```python
-from qfntools.qfntools import HsiRND
+from qfntools.qfntools import BayesLinReg, ZellnerLinReg, UnitInfoLinReg
 
-rnd = HsiRND(date='20220721', maturity_id=3)
-rnd.fit_BLA()
-rnd.fit_IV()
-rnd.fit_mixture_lognormal(K=2)
+data = pd.read_table('http://www2.stat.duke.edu/~pdh10/FCBS/Exercises/azdiabetes.dat', sep="\s+").drop(
+   columns=['diabetes'])
+data.insert(0, 'intercept', 1)
+
+# user-defined prior for beta
+BLR = BayesLinReg()
+BLR.fit(data, formula="skin ~ intercept + bmi + age", beta0=np.zeros(3), lambda0=np.identity(3), sigma02=0.2, v0=1)
+
+# Zellner's g prior
+BLR = ZellnerLinReg(g=100)
+BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
+
+# Unit information prior
+BLR = UnitInfoLinReg()
+BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
+
+BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
 ```
 
-#### \_\_init\_\_(_date_, _maturity_id_, _option_type_):
-date:
-date of option prices, in the format "yyyymmdd"
+#### MCMC samples
+```python
+# return a diagnostic object
+mcmc_samples = BLR.sample_posterior(10000)
+# retreieve actual samples DataFrame
+mcmc_samples.samples
+```
+#### MCMC diagnostic plots
+```python
+# autocorrelation plot to check chain stickiness & mixing
+mcmc_samples.acf()
 
-maturity_id:
-integer from 0 to around 11, represents maturity of options. 0 indicates the closest maturity options, 1 indicates
-the second closest maturity etc
+# traceplot to check convergence & mixing
+mcmc_samples.traceplot()
+```
 
-option_type:
-"C" or "P" (call or put options). Indicates the options to use for the Breeden and Litzenberger Approach
+#### Posterior distribution
+```python
+# retreieve actual samples DataFrame
+mcmc_samples.samples
 
-#### fit_BLA(_plot_):
-plot:
-bool, if true plot RND.
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BLA_rnd_plot.png?raw=true)
+# plot posterior density
+mcmc_samples.density_plot()
 
+# posterior mean
+mcmc_samples.mean()
 
-#### fit_IV(wb_mult, _plot_):
-wb_mult:
-bandwidth multiplier for kernel regression of BS implied volatility. bandwidth = wb_mult * 200 hsi points.
+# posterior credible interval of parameters
+mcmc_samples.credible_interval()
 
-plot:
-bool, if true plot RND.
+# approximated effective sample size 
+mcmc_samples.ess()
+```
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/posterior_density.png?raw=true)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/IV_int_rnd_plot.png)
+####  Predictive distribution
+```python
+# predictive posterior check
+mcmc_samples.ppc_plot( X, y, max_sample=100) # max_sample: maximum number of simulated datasets to plot
 
-#### fit_mixture_lognormal(K, _plot_):
-K:
-number of lognormal distribution in the mixture model. default 2.
+# predict conditional mean: E[Y_new|X_new, X_data]
+mcmc_samples.predict(X_new)
 
-plot:
-bool, if true plot RND.
+# credible interval of Y_new | X_new
+mcmc_samples.predictive_ci(X_new, q=(0.025,0.975))
+```
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/ppc.png?raw=true)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/mixture_rnd_plot.png?raw=true)
+## Bayesian linear regression with Bayesian model averaging 
+Run Bayesian linear regression (Zellner's g prior) with Bayesian model averaging. 
 
-
-### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/rnd_shift.jpg?raw=true)
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/diff_mat_rnd.jpg?raw=true)
-
-
-## Option Pricing under CEV model using FDM with non-uniform discretization
-A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
-
-CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
-In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
-
-(Note: when alpha=sigma, Beta=1, CEV becomes the famous Black-Scholes Model)
-
-In this [Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
-, we assumes stock dynamics to follow CEV, and price European options using Crank–Nicolson method with a non-uniform
-discretization.
+```python
+from qfntools.qfntools import BMA_LinReg
+data = pd.read_table('http://www2.stat.duke.edu/~pdh10/FCBS/Exercises/azdiabetes.dat', sep="\s+").drop(columns=['diabetes'])
+data.insert(0,'intercept', 1)
 
 
-### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
+# Bayesian linear regression (Zellner's g prior) with Bayesian model averaging 
+BMA = BMA_LinReg(g=10000)
+BMA.fit(data, y='skin', v0=1, sigma02=0.2)
+```
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
+#### MCMC samples
+```python
+samples = BMA.sample_posterior(10000) # model & parameter (betas, sigma2) samples from Gibbs sampler
+```
 
-When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges
-to Black-Scholes Formula price:
+#### Diagnostic plots
+```python
+BMA.diagnostic()
+```
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/BMA_diagnostic?raw=true)
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)
+
 
 ## Efficient Frontier
 Solve Efficient Frontier of assets. Risk measures can be "standard deviation", "Entropy",  "Conditional VaR", "VaR"
 
 <img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cmin_%7Bw%7D%20%5Cquad%20%26%0ARiskMeasure(w%2C%20X)%5C%5C%0A%5Ctextrm%0A%7Bs.t.%7D%20%5Cquad%20%26%0A%5Cmu%5E%7BT%7D%20%20w%20%3D%20%5Cmu_%7Btarget%7D%5C%5C%20%5Cquad%20%26%0A%5Csum_%7B1%7D%5E%7Bn%7Dw_i%20%3D1%5C%5C%0A%26ub%20%5Cgeq%20w%5Cgeq%20lb%20%20%20%20%5C%5C%0A%5Cend%7Balign*%7D">
 
-
 ```python
 from qfntools.qfntools import EfficientFrontier
 
+# risk_measure: one of "sd", "entropy", "var", "cvar"
+# alpha: percentile for "cvar" and "var" 
 ef = EfficientFrontier(risk_measure='cvar', alpha=5)
+
+# wbnd: bound of weightings; (0,1): long-only, (None, None): allow short-sale
+# mu_range: range of target return to optimize. Tune this.
 ef.fit(asset_return_df, wbnd=(0, 1), mu_range=np.arange(0.0055, 0.013, 0.0002))
 ```
 
-#### \_\_init\_\_(_risk\_measure_, _alpha_) :
-risk_measure:
-one of "sd", "entropy", "var", "cvar"
+#### Diagnostics :
+```python
+# plot efficient frontier
+ef.plot() 
 
-alpha:
-percentile for "cvar" and "var" 
-
-entropy_bins:
-no of bins for entropy
-
-#### fit(_df_, _wbnd_, _mu\_range_) :
-
-df:
-returns of assets in pd.DataFrame
-
-wbnd:
-bound of weightings; (0,1): long-only, (None, None): allow short-sale
-
-mu_range:
-range of target return to optimize. Tune this.
-
-#### plot() :
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_EF(cvar).png?raw=true)
-
-
-#### weights() :
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/1_weights.png?raw=true)
+# retreive weights
+ef.weights()
+```
 
 ## Dynamic Beta
-Use Kalman Filter to estimate betas in dynamic factor model
-
-Cast a dynamic factor model into linear state space form (factor loadings as state variable, return y as observable variable), and use Kalman filter and smoother to estimate the loadings.
+Use Kalman Filter to estimate betas in dynamic factor model. Cast a dynamic factor model into linear state space form (factor loadings as state variable, return y as observable variable), and use Kalman filter and smoother to estimate the loadings.
 
 <img src="https://render.githubusercontent.com/render/math?math=%5Cbegin%7Balign*%7D%0A%5Cbeta_%7Bt%2B1%7D%20%3D%20I%20%5Cbeta_%7Bt%7D%20%2B%20%5Cepsilon_%7Bt%2B1%7D%5C%5C%0A%5Cy_%7Bt%7D%20%3D%20x_%7Bt%7D%5ET%20%5Cbeta_%7Bt%7D%20%2B%20%5Cvarepsilon_%7Bt%2B1%7D%5C%5C%0Ax_%7B0%7D%20~%20N(%5Cmu_0%2C%20%5CSigma_0)%5C%5C%0A%5Cepsilon_%7Bt%7D%20~%20N(0%2C%20Q)%5C%5C%0A%5Cvarepsilon_%7Bt%7D%20~%20N(0%2C%20R)%5C%5C%0A%5Cend%7Balign*%7D%0A">
 
@@ -161,115 +161,55 @@ In smoothing, expectation and covariance at previous times are estimated given o
 from qfntools.qfntools import DynamicBeta
 
 dfe = DynamicBeta()
+
+# y: returns of one/more assets (Y) in pd.Dataframe
+# x: factors values (X) in pd.Dataframe
+# factor_pca: bool, default=False. If True, principal components of X are used as factors.
+# n_pc: int, number of principal components of X to be used as factors. 
 dfe.fit(yRet_df, factors_df)
 ```
 
-#### fit(_y_, _x_, _factor_pca_, _n\_pc_):
-y:
-returns of one/more assets (Y) in pd.Dataframe. 
+#### Diagnostics
+```python
+# plot KF smoother values
+dfe.plot(smoothed=True)
 
-x:
-factors values (X) in pd.Dataframe. 
-
-factor_pca:
-bool, default=False. If True, principal components of X are used as factors.
-
-n_pc:
-int, number of principal components of X to be used as factors. 
-
-#### plot(_smoothed_):
-smoothed:
-bool, default=False. If True, plot result from smoother. If False, plot result from filter.
-
-filter:
+# plot KF filter values
+dfe.plot(smoothed=False)
+```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
 
-smoother:
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_dynamicbetas.png?raw=true)
-
-
-## Factor Selection
-
-Select "factors" from assets (X), ues them as independent variables in factor model.
-
-      1. Find Principal Components of Y
-
-      2. Select factors from X whose absolute correlation with the PCs >= "req_corr". Use them
-      to represent PCs of Y. 
-      
-      3. If between-factor correlation >= "max_f_cor", remove the one with lower correlation with PCs.
-      
-      4. Build factor model: Y ~ Intercept + (B1 * X1) + (B2 * X2) + ...
+## HSI Risk Neutral Density
+Web-scrape HSI option prices from HKEX websites, and use various methods to extract risk-neutral density (RND) from option prices
 
 ```python
-from qfntools.qfntools import FactorSelection
+from qfntools.qfntools import HsiRND
 
-fs = FactorSelection(req_exp=0.8, req_corr=0.4, max_f_cor=0.7)
-fs.fit(y=equity_return_df, x=factor_df)
+# date: date of option prices, in the format "yyyymmdd"
+# maturity_id: int, represents maturity of options. 0 indicates the closest maturity options, 1 indicates the second closest maturity etc
+# option_type: "C" or "P" (call or put options). Indicates the options to use for extracting RND
+rnd = HsiRND(date='20220721', maturity_id=3, option_type='C')
+
+# fit BLA method 
+rnd.fit_BLA(plot=True)
+
+# use kernel regression to interpolate implied volatility curve, then use BS formula to inversely compute option prices of a continuum of 
+# strikes, and finally use BLA method to extract RND
+# wb_mult: bandwidth multiplier for kernel regression of BS implied volatility. bandwidth = wb_mult * 200 hsi points.
+rnd.fit_IV(wb_mult=2)
+
+# model terminal HSI as a mixture of log-normal density, and find the mixture that 'best fit' current option prices
+# K: number of log-normal distribution in the mixture model. default 2.
+rnd.fit_mixture_lognormal(K=2)
 ```
 
-#### \_\_init\_\_(_req\_exp_, _req\_corr_, _max\_f\_cor_) :
-req_exp:
-[0,1], required explanatory power of the PCs.
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/rnd_shift.jpg?raw=true)
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/diff_mat_rnd.jpg?raw=true)
 
-req_corr:
-[0,1], required absolute correlation of factor with PCs.
-
-max_f_cor:
-[0,1], maximum between-factor correlation.
-
-#### fit(_y_, _x_) :
-y:
-returns of assets in pd.DataFrame
-
-x:
-returns of potential factors in pd.DataFrame
-
-#### Results:
-   ```python
-fs.betas
-```
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_model.png?raw=true)
-
-```python
-fs.R2
-```
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/3_r2.png?raw=true)
-
-## Eigen Portfolio
-Find eigen portfolios of assets X. 
-
-```python
-from qfntools.qfntools import EigenPortfolio
-
-ep = EigenPortfolio(req_exp=0.8)
-ep.fit(asset_return_df)
-```
-
-#### \_\_init\_\_(_req\_exp_):
-req_exp:
-[0,1], required explanatory power. Determines the number of Eigen Portfolios
-
-
-#### fit(_df_):
-df:
-asset returns in pd.DataFrame
-
-#### Results :
-   ```python
-    ep.plot()
-    ep.price()
-    ep.return_()
-```
 
 ## Market Neutral Arbitrage
-Backtested with backtrader, 2013-01-01 to 2021-06-01, using {Nasdaq 100 + SP500} stocks, 10bps
-commission. Result: 0 beta, sharpe 1.04
-
 Paper: ["Statistical Arbitrage in the U.S. Equities Market"](https://github.com/johncky/Quantitative-Finance/blob/main/paper/Statistical_Arbitrage_in_the_U.S._Equities_Market.pdf)
 
 Implementation: ["Market neutral Arbitrage"](https://github.com/johncky/Quantitative-Finance/blob/main/strategies/Mean_reversion_arb.ipynb)
@@ -302,6 +242,31 @@ Strategies:
 Maintain a 4x gross leverage.
 
 
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_ev.png?raw=true)
-
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta.png?raw=true)
+
+## Option Pricing under CEV model using FDM with non-uniform discretization
+A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
+
+CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
+In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
+
+(Note: when alpha=sigma, Beta=1, CEV becomes the famous Black-Scholes Model)
+
+In this [Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
+, we assumes stock dynamics to follow CEV, and price European options using Crank–Nicolson method with a non-uniform
+discretization.
+
+
+### Results:
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
+
+When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges
+to Black-Scholes Formula price:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)

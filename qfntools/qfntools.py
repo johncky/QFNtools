@@ -1,10 +1,9 @@
 import pandas as pd
 import numpy as np
-from scipy.stats import pearsonr
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
+import seaborn as sns
 from pykalman import KalmanFilter
-from sklearn.decomposition import PCA
 from scipy.stats import entropy
 from statsmodels.sandbox.tools.tools_pca import pca
 import requests
@@ -14,7 +13,8 @@ from scipy.optimize import minimize
 from scipy.stats import norm
 import pandas_market_calendars as mcal
 from time import strptime
-
+from numpy.linalg import inv
+from scipy.special import loggamma
 
 class EfficientFrontier:
     def __init__(self, risk_measure, alpha=5, entropy_bins=None):
@@ -189,138 +189,485 @@ class DynamicBeta:
             self.filter_df.plot()
 
 
-class EigenPortfolio:
-    def __init__(self, n_pc):
-        self.n_pc = n_pc
-        self.rets = None
-        self.norm_wgt = None
-        self.explained_variance_ratio = None
+# Diagnostic plots for MCMC samples
+class Diagnostic:
+    def __init__(self, samples):
+        self.samples = samples
 
-    def fit(self, rets):
-        self.rets = rets
-        std = rets.std(0)
-        std_rets = (rets - rets.mean(0)) / std
-        pca = PCA(n_components=self.n_pc, random_state=1)
-        pca.fit(std_rets)
-        norm_wgt = pd.DataFrame(pca.components_, columns=rets.columns,
-                                index=['PC{}'.format(i + 1) for i in range(self.n_pc)]).T
-        norm_wgt = norm_wgt.div(std, axis=0)
-        self.norm_wgt = norm_wgt / norm_wgt.sum()
-        self.explained_variance_ratio = pca.explained_variance_ratio_
+    # draw autocorrelation plots to identify stickiness of MCMC chain
+    def acf(self, max_var=5, max_lags=100):
+        samples = getattr(self, 'samples')
+        var_names = samples.columns
 
-    def price(self):
-        port_df = self.return_().add(1).cumprod()
-        return port_df
+        n_var = min(max_var, samples.shape[1])
+        fig, axes = plt.subplots(nrows=n_var, ncols=1, sharex=True)
+        max_lags = min(max_lags, samples.shape[0])
+        for i in range(n_var):
+            ax = axes[i]
+            acorr = sm.tsa.acf(samples.iloc[:, i], nlags=max_lags)
+            ax.bar(range(0, max_lags + 1), acorr)
+            ax.set_title(var_names[i], fontsize=10)
+        fig.tight_layout(rect=[0.03, 0.03, 1, 0.97])
+        fig.suptitle('Autocorrelation')
+        fig.supxlabel('lags')
+        fig.supylabel('corr')
+        plt.show()
 
-    def plot(self):
-        port_df = self.price()
-        port_df.plot()
+    # draw traceplot to ensure convergence & good mixing
+    def traceplot(self, max_var=5, max_n=1000):
+        samples = getattr(self, 'samples')
+        var_names = samples.columns
 
-    def return_(self):
-        ret_df = pd.DataFrame(np.dot(self.rets, self.norm_wgt), index=self.rets.index,
-                              columns=['PC{}'.format(i + 1) for i in range(self.n_pc)])
-        return ret_df
+        n_var = min(max_var, samples.shape[1])
+        fig, axes = plt.subplots(nrows=n_var, ncols=1, sharex=True)
+        max_n = min(max_n, samples.shape[0])
+        for i in range(n_var):
+            ax = axes[i]
+            ax.plot(range(1, max_n + 1), samples.iloc[:max_n, i])
+            ax.set_title(var_names[i], fontsize=10)
+        fig.tight_layout(rect=[0.03, 0.03, 1, 0.97])
+        fig.suptitle('Traceplot')
+        fig.supxlabel('id')
+        fig.supylabel('val')
+        plt.show()
+
+    # draw posterior density of all variables
+    def density_plot(self):
+        samples = getattr(self, 'samples')
+        p = sns.pairplot(samples, diag_kind="kde", plot_kws=dict(alpha=1,
+                                                                 hue=samples.index,
+                                                                 palette="blend:gold,dodgerblue"))
+        p.map_lower(sns.kdeplot, color=".2")
+        p.fig.suptitle('Posterior Density')
+        p.fig.tight_layout(rect=[0, 0, 1, 0.99])
+        plt.show()
+
+    # compute posterior mean of variables
+    def mean(self):
+        return self.samples.mean()
+
+    # compute posterior credible interval of variables
+    def credible_interval(self, alpha=0.05):
+        samples = getattr(self, 'samples')
+        return samples.quantile([alpha / 2, 1 - alpha / 2])
+
+    # approximation of effective sample size using autocorrelation
+    def ess(self):
+        samples = getattr(self, 'samples')
+        return samples.shape[0] / (samples.apply(func=lambda x: sm.tsa.acf(x)[1:]).sum() * 2 + 1)
+
+    # E[Y|X] = int E[Y|X,beta] p(beta|X) dbeta
+    # compute the conditional mean of Y given new X & data
+    def predict(self, X):
+        samples = getattr(self, 'samples')
+        return X.dot(samples.iloc[:, :-1].T)
+
+    # generate samples of Y given new X, using beta samples from MCMC
+    # noise is added here, assuming that the noises are iid normal with variance = posterior sigma2 samples
+    def predictive_dist(self, X):
+        samples = getattr(self, 'samples')
+        S = samples.shape[0]
+        noise = np.random.normal(0, np.sqrt(samples.iloc[:, -1]), size=[X.shape[0], S])
+        y_samples = X.dot(samples.iloc[:, :-1].T) + noise
+
+        return y_samples
+
+    # compute the predictive confidence interval of Y given a new X, using samples from MCMC
+    def predictive_ci(self, X, q=(0.025, 0.975)):
+        y_samples = self.predictive_dist(X)
+        return np.quantile(y_samples, q, axis=1).T
+
+    # plot the predictive posterior checks
+    # compare the simulated dataset generated from our model to the actual dataset
+    # a good model should generate simulated datasets close to actual dataset
+    def ppc_plot(self, X, y, max_sample=100, **kwargs):
+        samples = getattr(self, 'samples')
+        sim_y = X.dot(samples.iloc[:, :-1].T) + np.random.normal(0, np.sqrt(samples.iloc[:, -1]))
+        for i in range(min(sim_y.shape[1], max_sample)):
+            sns.kdeplot(data=sim_y[:, i], alpha=0.1)
+        sns.kdeplot(data=y, color='black', linewidth=1, label='data', **kwargs)
+        sns.kdeplot(data=np.mean(sim_y, axis=1), color='red', linewidth=1, label='Simulated mean', **kwargs)
+
+        ols_y = X.dot(inv(X.T.dot(X)).dot(X.T).dot(y))
+        sns.kdeplot(data=ols_y, color='blue', linewidth=1, label='OLS', **kwargs)
+
+        plt.legend()
+        plt.show()
 
 
-class FactorSelection:
-    def __init__(self, req_exp, req_corr, max_f_cor):
-        self.req_exp = req_exp
-        self.req_corr = req_corr
-        self.max_f_cor = max_f_cor
-        self.eigen_port = None
-        self.fac = list()
-        self.x = None
-        self.R2 = None
-        self.betas = None
+# Implementation of bayesian linear regression with Normal beta prior, Inverse-gamma noise sigma2
+class BayesLinReg:
+    def __init__(self):
+        self.res = np.nan
 
-    def fit(self, y, x):
-        self.x = x
-        self.eigen_port = EigenPortfolio(self.req_exp)
-        self.eigen_port.fit(y)
-        fac_id = list()
-        fac_p = list()
-        eigen_port_df = self.eigen_port.return_()
+    # breakdown formula and extract X & y from DataFrame
+    def fit(self, data, formula, beta0, lambda0, sigma02, v0):
+        str_seg = formula.split('~')
+        resp = str_seg[0].strip()
+        if str_seg[1].strip() == '.':
+            predictors = list(data.columns)
+            predictors.remove(resp)
+        else:
+            predictors = [v.strip() for v in str_seg[1].split('+')]
 
-        for p in range(eigen_port_df.shape[1]):
-            epi = eigen_port_df.iloc[:, p]
-            for f in range(x.shape[1]):
-                if f in fac_id:
-                    continue
-                r, p = pearsonr(x.iloc[:, f], epi)
-                if abs(r) >= self.req_corr:
-                    fac_id.append(f)
-                    fac_p.append(abs(p))
+        X = data[predictors].to_numpy()
+        y = data[resp].to_numpy()
+        coef_names = ['beta_{}'.format(var) for var in predictors] + ['sigma2']
 
-        sort_fac = [x for _, x in sorted(zip(fac_p, fac_id))]
+        setattr(self, 'formula', formula)
+        setattr(self, 'predictors', predictors)
+        setattr(self, 'response', resp)
+        setattr(self, 'coef_names', coef_names)
 
-        if len(fac_id) == 0:
-            print('All factors < req_corr')
-            return
+        self._fit(X, y, beta0, lambda0, sigma02, v0)
 
-        removed = list()
-        for i in range(len(sort_fac) - 1):
-            if sort_fac[i] in removed:
+    # compute the stuff necessary for drawing MCMC samples
+    def _fit(self, X, y, beta0, lambda0, sigma02, v0):
+        XTX = X.T.dot(X)
+        lambda0_inv = inv(lambda0)
+        beta_ols = inv(XTX).dot(X.T).dot(y)
+        n = X.shape[0]
+        p = beta0.shape[0]
+
+        _local_vars = locals()
+        _local_var_names = list(_local_vars.keys())
+        _local_var_names.remove('self')
+        for var in _local_var_names:
+            setattr(self, var, _local_vars[var])
+
+    # function to draw from full conditionals of beta
+    def beta_full_conditionals(self, XTX, lambda0_inv, beta_ols, beta0, sigma2):
+
+        sample_precision = XTX / sigma2
+        lambdan_inv = sample_precision + lambda0_inv
+        lambdan = inv(lambdan_inv)
+        beta_n = lambdan.dot(sample_precision.dot(beta_ols) + lambda0_inv.dot(beta0))
+
+        return np.random.multivariate_normal(mean=beta_n, cov=lambdan, size=1).flatten()
+
+    # function to draw from full conditionals of sigma2
+    def sigma2_full_conditionals(self, X, y, v0, n, sigma02, beta):
+
+        residual = y - X.dot(beta)
+        SSR_beta = residual.T.dot(residual)
+
+        return 1 / np.random.gamma((v0 + n) / 2, 2 / (v0 * sigma02 + SSR_beta), size=1)
+
+    # Gibbs sampling to sample from posterior
+    def sample_posterior(self, sample_size=10000, burn_ins=1000):
+        XTX = getattr(self, 'XTX')
+        X = getattr(self, 'X')
+        lambda0_inv = getattr(self, 'lambda0_inv')
+        beta_ols = getattr(self, 'beta_ols')
+        n = getattr(self, 'n')
+        p = getattr(self, 'p')
+        y = getattr(self, 'y')
+        beta0 = getattr(self, 'beta0')
+        sigma02 = getattr(self, 'sigma02')
+        v0 = getattr(self, 'v0')
+
+        beta = beta0
+        samples = np.zeros(shape=[sample_size, p + 1])
+
+        for i in range(burn_ins):
+            sigma2 = self.sigma2_full_conditionals(X, y, v0, n, sigma02, beta)
+            beta = self.beta_full_conditionals(XTX, lambda0_inv, beta_ols, beta0, sigma2)
+
+        for i in range(sample_size):
+            sigma2 = self.sigma2_full_conditionals(X, y, v0, n, sigma02, beta)
+            beta = self.beta_full_conditionals(XTX, lambda0_inv, beta_ols, beta0, sigma2)
+            samples[i, :-1] = beta
+            samples[i, -1] = sigma2
+
+        samples = pd.DataFrame(samples, columns=self.coef_names)
+        self.res = Diagnostic(samples)
+        return self.res
+
+# Zellner's g prior
+# g is shrinkage parameter, smaller g, posterior of beta is shrink towards 0. larger g, posterior mean converges to OLS
+# beta
+class ZellnerLinReg(BayesLinReg):
+    def __init__(self, g):
+        super().__init__()
+        self.g = g
+
+    def fit(self, data, formula, sigma02, v0):
+        super().fit(data, formula, beta0=np.nan, lambda0=np.nan, sigma02=sigma02, v0=v0)
+
+    # compute stuff requires for drawing posterior samples
+    # log marginal likelihood log[p(x|Model)] is also computed for model averaging
+    def _fit(self, X, y, beta0, lambda0, sigma02, v0):
+        beta0 = np.zeros(len(self.predictors))
+        lambda0 = np.identity(1)
+        super()._fit(X, y, beta0, lambda0, sigma02, v0)
+
+        g = self.g
+
+        SSR_g = y.T.dot(y - g / (1 + g) * X.dot(self.beta_ols))
+        vnsigman2 = v0 * sigma02 + SSR_g
+        scale_n = 2 / vnsigman2
+
+        n = self.n
+        vn = v0 + n
+        log_marginal_likelihood = (-n / 2) * np.log(np.pi) + loggamma(vn / 2) - loggamma(v0 / 2) + (
+                    -self.p / 2) * np.log(1 + g) + (v0 / 2) * np.log(v0 * sigma02) - (vn / 2) * np.log(vnsigman2)
+
+        setattr(self, 'log_marginal_likelihood', log_marginal_likelihood)
+        setattr(self, 'scale_n', scale_n)
+
+    def beta_full_conditionals(self, XTX, lambda0_inv, beta_ols, beta0, sigma2):
+        g = self.g
+
+        sample_precision = XTX / sigma2
+        lambdan_inv = sample_precision * (1 + 1 / g)
+        lambdan = inv(lambdan_inv)
+        beta_n = (g / (1 + g)) * beta_ols
+        return np.random.multivariate_normal(mean=beta_n, cov=lambdan, size=1).flatten()
+
+    # it is not full conditionals
+    # it is actually posterior distribution, since the priors are not independent in Zellner's g
+    def sigma2_full_conditionals(self, X, y, v0, n, sigma02, beta):
+        g = self.g
+        scale_n = self.scale_n
+        return 1 / np.random.gamma((v0 + n) / 2, scale_n, size=1)
+
+    # this is not Gibbs' sampler
+    # this is standard Monte Carlo: draw sigma2 from posterior, draw beta | sigma2 from posterior
+    # then, we have true joint posterior
+    def sample_posterior(self, sample_size=10000):
+        return super().sample_posterior(sample_size=10000, burn_ins=0)
+
+
+# Unit information prior
+# it is simply g=n (sample size) in Zellner's g prior
+class UnitInfoLinReg(ZellnerLinReg):
+    def __init__(self):
+        super(ZellnerLinReg, self).__init__()
+
+    @property
+    def g(self):
+        return self.X.shape[0]
+
+# using Bayesian model averaging (BMA) on top of Zellner's g prior
+# one requirement for using BMA is that we know the marginal likelihood of a model: P(X|model)
+# which is possible in closed form using Zellner's g prior
+class BMA_LinReg:
+    def __init__(self, g):
+        self.samples = np.nan
+        self.g = g
+        self.X = np.nan
+        self.y = np.nan
+        self.predictors = np.nan
+        self.resp = np.nan
+
+        self.seen_models = list()
+        self.model_params = dict()
+
+    def fit(self, data, y, v0, sigma02):
+        data = data.copy()
+        y_series = data.pop(y)
+
+        self.resp = y_series.name
+        self.predictors = list(data.columns)
+        self.X = data.to_numpy()
+        self.y = y_series.to_numpy()
+        self.v0 = v0
+        self.sigma02 = sigma02
+
+    def fit_submodel(self, X, y, z):
+        v0 = self.v0
+        sigma02 = self.sigma02
+        g = self.g
+
+        X_new = X[:, z == 1]
+        XTX = X_new.T.dot(X_new)
+        beta_ols = inv(XTX).dot(X_new.T).dot(y)
+        n = X_new.shape[0]
+        p = X_new.shape[1]
+        vn = v0 + n
+        SSR_g = y.T.dot(y - g / (1 + g) * X_new.dot(beta_ols))
+        vnsigman2 = v0 * sigma02 + SSR_g
+        log_marginal_likelihood = (-n / 2) * np.log(np.pi) + loggamma(vn / 2) - loggamma(v0 / 2) + (-p / 2) * np.log(
+            1 + g) + (v0 / 2) * np.log(v0 * sigma02) - (vn / 2) * np.log(vnsigman2)
+
+        return (vnsigman2, log_marginal_likelihood, beta_ols, XTX)
+
+    def log_marginal_likelihood(self, X, y, z):
+        z_str = ''.join([str(int(x)) for x in z])
+        if z_str in self.seen_models:
+            val = self.model_params[z_str]['log_marginal_likelihood']
+        else:
+            res = self.fit_submodel(X, y, z)
+            val = res[1]
+
+            params = {'vnsigman2': res[0],
+                      'log_marginal_likelihood': val,
+                      'beta_ols': res[2],
+                      'XTX': res[3]}
+
+            self.seen_models.append(z_str)
+            self.model_params[z_str] = params
+        return val
+
+    def sample_from_model(self, X, y, z, v0, n, g):
+        z_str = ''.join([str(int(x)) for x in z])
+        if z_str in self.seen_models:
+            XTX = self.model_params[z_str]['XTX']
+            beta_ols = self.model_params[z_str]['beta_ols']
+            vnsigman2 = self.model_params[z_str]['vnsigman2']
+        else:
+            res = self.fit_submodel(X, y, z)
+
+            XTX = res[3]
+            beta_ols = res[2]
+            vnsigman2 = res[0]
+
+            params = {'vnsigman2': vnsigman2,
+                      'log_marginal_likelihood': res[1],
+                      'beta_ols': beta_ols,
+                      'XTX': XTX}
+
+            self.seen_models.append(z_str)
+            self.model_params[z_str] = params
+
+        sigma2_sample = 1 / np.random.gamma((v0 + n) / 2, 2 / vnsigman2, size=1)
+
+        lambdan = inv(XTX / sigma2_sample * (1 + 1 / g))
+        beta_n = (g / (1 + g)) * beta_ols
+        beta_sample = np.random.multivariate_normal(mean=beta_n, cov=lambdan, size=1).flatten()
+
+        return (beta_sample, sigma2_sample)
+
+    def sample_posterior(self, sample_size=10000):
+        X = self.X
+        y = self.y
+        g = self.g
+        v0 = self.v0
+
+        max_p = X.shape[1]
+        n = X.shape[0]
+        z = np.ones(max_p)
+
+        samples = np.empty(shape=[sample_size, 2 * max_p + 1])
+        samples[:] = np.nan
+
+        for i in range(sample_size):
+            for j in range(max_p):
+                z_incld = z.copy()
+                z_incld[j] = 1
+
+                z_excld = z.copy()
+                z_excld[j] = 0
+
+                log_odd_diff = self.log_marginal_likelihood(X, y, z_incld) - self.log_marginal_likelihood(X, y, z_excld)
+                if log_odd_diff > 709.78:
+                    z[j] = 1
+                else:
+                    odd = np.exp(
+                        self.log_marginal_likelihood(X, y, z_incld) - self.log_marginal_likelihood(X, y, z_excld))
+                    z[j] = np.random.binomial(1, odd / (1 + odd))
+
+            if z.sum() == 0:
                 continue
-            for j in range(i + 1, len(sort_fac)):
-                if sort_fac[j] in removed:
-                    continue
-                r, p = pearsonr(x.iloc[:, sort_fac[i]], x.iloc[:, sort_fac[j]])
+            model_sample = self.sample_from_model(X, y, z, v0, n, g)
+            samples[i:, 0:max_p] = z
+            samples[i:, np.where(z == 1)[0] + max_p] = model_sample[0]
+            samples[i:, -1] = model_sample[1]
 
-                if abs(r) > self.max_f_cor:
-                    removed.append(sort_fac[j])
-        sort_fac = [x for x in sort_fac if x not in removed]
-        self.fac = list(x.columns[sort_fac])
-        self.build_model()
+        predictors = self.predictors
+        cols = ['include_{}'.format(x) for x in predictors] + predictors + ['sigma2']
+        samples = pd.DataFrame(samples, columns=cols)
+        self.samples = samples
+        return samples
 
-    def merged_df(self):
-        eigen_port_df = self.eigen_port.return_(True)
-        merged_df = pd.concat([self.factor_df(), eigen_port_df], axis=1)
-        return merged_df
+    def predictive_dist(self, X):
+        samples = self.samples
+        p = len(self.predictors)
+        betas = samples.iloc[:, p:2 * p]
+        betas = np.nan_to_num(betas, 0)
+        return X.dot(betas.T)
 
-    def factor_df(self):
-        return self.x.copy()[self.fac]
+    def predict(self, X):
+        return np.mean(self.predictive_dist(X), axis=1)
 
-    def plot_eigen(self, const_rebal=False):
-        self.eigen_port.plot(const_rebal)
+    def diagnostic(self):
+        X = self.X
+        y = self.y
+        samples = self.samples
+        y_pred = self.predict(X)
 
-    def build_model(self):
-        fac_df = self.factor_df()
-        fac_df = (fac_df - fac_df.mean()) / fac_df.std()
-        eqty_df = self.eigen_port.df.copy()
-        eqty_df = (eqty_df - eqty_df.mean()) / eqty_df.std()
+        fig, axes = plt.subplots(nrows=2, ncols=2, sharex=False, figsize=(11, 11))
 
-        X = fac_df.to_numpy()
-        X = sm.add_constant(X)
-        R2 = list()
-        betas = list()
-        # Run regression on Equity returns using selected factors as predictors
-        for i in range(eqty_df.shape[1]):
-            model = sm.OLS(endog=eqty_df.iloc[:, i], exog=X)
-            result = model.fit()
-            R2.append(result.rsquared)
-            betas.append(result.params)
+        # probability of inclusion
+        include_p = samples.iloc[:, :X.shape[1]]
+        include_p = include_p.mean().to_numpy()
+        ax = axes[0, 0]
+        sns.barplot(x=self.predictors, y=include_p, ax=ax, color='b')
+        ax.set_xlabel('Predictors')
+        ax.set_ylabel('Probability')
+        ax.set_title('Probability of inclusion')
 
-        R2 = pd.DataFrame(R2, index=eqty_df.columns, columns=['R squared'])
-        betas = pd.DataFrame(betas, index=eqty_df.columns)
-        betas = betas.T
-        betas.index = ['intercept'] + list(fac_df.columns)
-        self.R2 = R2
-        self.betas = betas.T
+        # predicted Y vs Y scatter plot
+        ols_y = X.dot(inv(X.T.dot(X)).dot(X.T).dot(y))
+        ax = axes[0, 1]
+        sns.regplot(x=y, y=y_pred, ax=ax, color='b', ci=None, scatter_kws={'s': 0.5}, line_kws={'linewidth': 0.7},
+                    label='BMA')
+        sns.regplot(x=y, y=ols_y, ax=ax, color='r', ci=None, scatter_kws={'s': 0.5}, line_kws={'linewidth': 0.7},
+                    label='OLS')
+        # sns.regplot(x=x, y=y)
+        ax.set_xlabel('Y')
+        ax.set_ylabel('Y pred')
+        ax.set_title('Predicted Y')
+        ax.legend()
+
+        # error density
+        ols_err = ols_y - y
+        bma_err = y_pred - y
+        ols_mse = np.round(np.mean(ols_err ** 2), 2)
+        bma_mse = np.round(np.mean(bma_err ** 2), 2)
+        ax = axes[1, 0]
+        sns.kdeplot(data=ols_err, color='r', linewidth=1, label='OLS MSE:{}'.format(ols_mse), ax=ax, alpha=0.5,
+                    fill=True)
+        sns.kdeplot(data=bma_err, color='b', linewidth=1, label='BMA MSE:{}'.format(bma_mse), ax=ax, alpha=0.5,
+                    fill=True)
+        ax.legend()
+        ax.set_xlabel('Error')
+        ax.set_title('Error density')
+
+        # ppc checks
+        ax = axes[1, 1]
+        sim_y = self.predictive_dist(X)
+        for i in range(min(sim_y.shape[1], 500)):
+            sns.kdeplot(data=sim_y[:, i], alpha=0.1, ax=ax)
+        sns.kdeplot(data=y, color='black', linewidth=1, label='data', ax=ax)
+        ax.set_xlabel('value')
+        ax.set_ylabel('density')
+        ax.set_title('Posterior predictive check')
+        ax.legend()
+
+        plt.show()
 
 
+# scrape HSI option prices & construct risk-neutral density using various methods
 class HsiRND:
     def __init__(self, date, maturity_id, option_type='C'):
         self.date = date
+
+        # maturity_id is in the format: YYYYMMDD
         self.maturity_id = maturity_id
+        option_type = option_type.upper()
         assert (option_type in ('C', 'P')), 'Option Type must be "C" or "P"'
         self.option_type = option_type
 
         # download raw option data from HKEX
         self.option_df = self.download_option_data()
 
-        # filter option data to only selected ones
+        # filter option data to only the selected maturity
+        # get the string name of maturity, e.g. MAR-22
         maturity_str = self.option_df.maturity.unique()[
-            maturity_id]  # get the string name of maturity, for example, MAR-22
+            maturity_id]
+
+        # filtered_df
         self.filtered_df = \
             self.option_df.loc[(self.option_df.maturity == maturity_str) & (self.option_df.type == self.option_type)][
                 ['strike', 'IV%', 'Close']]
@@ -328,6 +675,7 @@ class HsiRND:
         # calculate spot HSI S0, maturity T in years (trading days only), risk-free rate rf
         self.T = self.get_T(maturity_str=maturity_str)
         self.rf = self.get_rf()  # 1-year HIBOR is taken as risk-free
+        # S0 is approximately option value of extremely OTM option + strike
         if self.option_type == 'C':
             self.S0 = (self.filtered_df['Close'] + self.filtered_df.strike).iloc[0]
         else:
@@ -336,8 +684,10 @@ class HsiRND:
         # store fitted pdf/pmf
         self.fitted_models = dict()
 
+    # fit using BLA method
+    # min_hsi, max_hsi: infer density between [min_hsi, max_hsi]
     def fit_BLA(self, evaluation_steps=5, min_hsi=5, max_hsi=100000):
-        filtered_df = self.filtered_df
+        filtered_df = self.filtered_df.copy()
 
         # keep track of changes in strike gap
         k = filtered_df['strike']
@@ -351,7 +701,8 @@ class HsiRND:
         # formula for butterfly spread prices
         bfly_spr = (-2 * price + price.shift(1) + price.shift(-1))
 
-        # Prices of Butterfly spread with these strikes cannot be calculated, as prices of some strikes are not available (changing strike gap)
+        # Prices of Butterfly spread with these strikes cannot be calculated, as prices of some strikes are not available
+        # due to the changing strike gap
         for i in idx_gap_chg:
             bfly_spr.loc[i - 1] = 0
 
@@ -363,12 +714,12 @@ class HsiRND:
         fixed_pmf = self.enforce_cmf_monotonicity(pmf)
         fixed_pmf = pd.DataFrame(fixed_pmf, columns=['pmf'])
 
-        # sum to 1
+        # divide by normalizing constant so that they sum to 1, this may not be appropriate!
         fixed_pmf = fixed_pmf / fixed_pmf.sum()
-        self.fitted_models['BLA'] = fixed_pmf
+        self.fitted_models['BLA'] = fixed_pmf # store fitted pmf
         return fixed_pmf
 
-    # given pd.Series ith index=strikes, values=pmf, it remove (-ve) vals and interpolate cmf
+    # given pd.Series with index=strikes, values=pmf, it remove (-ve) vals and interpolate cmf
     def enforce_cmf_monotonicity(self, density):
         strikes = density.index
         cmf = density.cumsum()
@@ -379,10 +730,18 @@ class HsiRND:
         fixed_pmf = pos_cmf.reindex(strikes).interpolate(method='pchip').diff().fillna(0)
         return fixed_pmf
 
+    # Use kernel regression to interpolate the implied volatility curve,
+    # and obtain "artificial" option prices for a continuum of strikes using BS formulas
+    # then use BLA method to compute RND
+    # Parameters:
+    # wb of kernal regression = wb_mult * 200
+    # evaluatuion_steps: the gap between strikes
+    # min_hsi, max_hsi: min & max of hsi points at which to evaluate IV
+    # min_moneyness, max_moneyness: evaluate RND at [min & max moneyness] * strikes
     def fit_IV(self, wb_mult=4, evaluation_steps=5, min_hsi=5, max_hsi=100000, min_moneyness=0.3, max_moneyness=2):
         filtered_df = self.filtered_df
 
-        # estimation points
+        # get estimation points from (min_hsi, max_hsi, evaluation_steps)
         est_pts = np.arange(min_hsi, max_hsi, evaluation_steps)
 
         # run kernel regression on Black-Scholes Implied Volatility
@@ -406,6 +765,7 @@ class HsiRND:
         BLA_pmf = BLA_pmf.loc[BLA_pmf.index >= S0 * min_moneyness]  # set a lower bound range for strike
         BLA_pmf = BLA_pmf.loc[BLA_pmf.index <= S0 * max_moneyness]  # set a upper bound range for strike
 
+        # divide by normalizing constant so that they sum to 1, this may not be appropriate
         BLA_pmf = BLA_pmf / BLA_pmf.sum()
         BLA_pmf = pd.DataFrame(BLA_pmf, columns=['pmf'])
         self.fitted_models['IV_Int'] = BLA_pmf
@@ -427,14 +787,13 @@ class HsiRND:
                 res.append(np.dot(kernel_wgts, y) / sum_)
         return pd.DataFrame({'x': est_pts, 'y': res}).set_index('x')
 
+    # compute call price using BS formula
     def bs_call(self, S, K, T, r, vol):
-        N = norm.cdf
         d1 = (np.log(S / K) + (r + 0.5 * vol ** 2) * T) / (vol * np.sqrt(T))
         d2 = d1 - vol * np.sqrt(T)
         return S * norm.cdf(d1) - np.exp(-r * T) * K * norm.cdf(d2)
 
     def bs_put(self, S, K, T, r, vol):
-        N = norm.cdf
         d1 = (np.log(S / K) + (r + 0.5 * vol ** 2) * T) / (vol * np.sqrt(T))
         d2 = d1 - vol * np.sqrt(T)
         return np.exp(-r * T) * K * norm.cdf(-d2) - S * norm.cdf(-d1)
