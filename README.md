@@ -17,9 +17,7 @@ with Bayesian model averaging, sample from posterior distri
 
 
 **Other stuff**:
-- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
-- [Option Pricing Under CEV Model using FDM with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
-
+- [Market neutral mean reversion arbitrage](#market-neutral-arbitrage)
 
 ### Bayesian Linear Regression
 Run Bayesian linear regression with different priors
