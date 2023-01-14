@@ -9,7 +9,7 @@ Content
 
 - [Risk Neutral Density](#hsi-risk-neutral-density) ：Download option data from HKEX and find underlying risk-neutral densities.
 
-- [Bayesian Linear Regression with Bayesian Model Averaging](#bayesian-model-averaging) ： Run Bayesian linear regression
+- [Bayesian Linear Regression with Bayesian Model Averaging](#Bayesian-linear-regression-with-Bayesian-model-averaging ) ： Run Bayesian linear regression
 with Bayesian model averaging, sample from posterior distri
 
 - [Pricing European options under CEV model with non-uniform Crank-Nicolson Method](#bayesian-model-averaging) ： Run Bayesian linear regression
@@ -19,8 +19,6 @@ with Bayesian model averaging, sample from posterior distri
 - [Market neutral mean reversion arbitrage](#market-neutral-arbitrage) 
 - [Option Pricing Under CEV Model using FDM with Non-uniform Discretization](#option-pricing-under-cev-model-using-fdm-with-non-uniform-discretization)
 
-data = pd.read_table('http://www2.stat.duke.edu/~pdh10/FCBS/Exercises/azdiabetes.dat', sep="\s+").drop(columns=['diabetes'])
-data.insert(0,'intercept', 1)
 
 ### Bayesian Linear Regression
 Run Bayesian linear regression with different priors
@@ -180,6 +178,37 @@ dfe.plot(smoothed=False)
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/4_filterbetas.png?raw=true)
 
+## Option Pricing under CEV model using FDM with non-uniform discretization
+A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
+
+CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
+In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
+
+When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges
+to Black-Scholes Formula price.
+
+#### Usage
+```python
+from qfntools.qfntools import CEV_European
+
+# parameters of the option
+# T: maturity in years
+# K: strike of the option
+# r: risk-free rate
+# q: dividend yield
+# S0: spot price
+# type: 'Call' or 'Put'
+
+option_1 = {'T': 1, 'K': 0.8*100, 'r':0.02, 'q':0.01, 'S0': 100, 'type':'Call'}
+
+# price the option under CEV(alpha=20, beta=2) model
+CEV_European(option_1, alpha=20, beta=2)
+```
+
+![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
+
 
 ## HSI Risk Neutral Density
 Web-scrape HSI option prices from HKEX websites, and use various methods to extract risk-neutral density (RND) from option prices
@@ -243,30 +272,3 @@ Maintain a 4x gross leverage.
 
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/arb_beta.png?raw=true)
-
-## Option Pricing under CEV model using FDM with non-uniform discretization
-A stock follows constant elasticity of variance (CEV) model if the following is satisfied:
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CEV_model.jpg?raw=true)
-
-CEV model allows a more realistic non-constant Black-Scholes Implied Volatility (IV) curve across option strikes.
-In practice, we often notice that IV for options are higher at extreme ends, forming a "smile" shape curve.
-
-(Note: when alpha=sigma, Beta=1, CEV becomes the famous Black-Scholes Model)
-
-In this [Report](https://github.com/johncky/Quantitative-Finance/blob/main/paper/option_pricing_project.pdf)
-, we assumes stock dynamics to follow CEV, and price European options using Crank–Nicolson method with a non-uniform
-discretization.
-
-
-### Results:
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_1.png?raw=true)
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_convergence_2.png?raw=true)
-
-When alpha=stock sigma, Beta=1, CEV becomes the Black-Scholes Model (BSM), and option price converges
-to Black-Scholes Formula price:
-
-![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/CNM_CEV_convergence_to_BSF.png?raw=true)

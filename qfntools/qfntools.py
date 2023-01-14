@@ -15,6 +15,8 @@ import pandas_market_calendars as mcal
 from time import strptime
 from numpy.linalg import inv
 from scipy.special import loggamma
+import scipy
+from scipy.sparse import diags
 
 class EfficientFrontier:
     def __init__(self, risk_measure, alpha=5, entropy_bins=None):
@@ -1022,3 +1024,99 @@ class HsiRND:
             -((np.log(est_pts) - alpha) ** 2) / (2 * beta ** 2))
         density = density / density.sum()
         return pd.DataFrame(density, index=est_pts)
+
+
+def CEV_European(params, alpha, beta, t_steps=500, S_steps=500, max_moneyness=2, min_moneyness=0, ):
+    # implied volatility under CEV model
+    def LVF_vol(alpha, St, beta):
+        ret = np.zeros(St.shape[0])
+        ret[1:] = alpha * np.power(St[1:], 1 - beta)
+        ret[0] = np.nan
+        return ret
+
+    # calculate matrices required in Crank-Nicolson method
+    def cal_matrics(dt, r, q, vol_vector, S_grids):
+        dS = np.diff(S_grids)
+        vol_sqrt = np.power(vol_vector, 2)
+        S_j = S_grids
+        S_sqrt = np.power(S_j, 2)
+        dS_sqrt = np.power(dS, 2)
+
+        sum_dS = dS[:-1] + dS[1:]
+        sqrt_term = (dt * vol_sqrt[1:-1] * S_sqrt[1:-1]) / (2 * (dS_sqrt[:-1] * dS[1:] + dS_sqrt[1:] * dS[:-1]))
+        rq_term = dt * (r - q) * S_j[1:-1] / (2 * sum_dS)
+
+        b = -(sqrt_term * sum_dS) - r / 2 * dt
+        c = rq_term + (sqrt_term * dS[:-1])
+        a = (sqrt_term * dS[1:]) - rq_term
+
+        B = diags([1 - b, -a[1:], -c[:-1]], [0, -1, 1]).toarray()
+        C = diags([1 + b, a[1:], c[:-1]], [0, -1, 1]).toarray()
+
+        return a, b, c, B, C
+
+    # extract parameters for the option to price
+    S0 = params['S0']
+    T = params['T']
+    K = params['K']
+    r = params['r']
+    q = params['q']
+    type1 = params['type']
+    r_adj = r - q
+
+    # time (t) points in grid
+    dt = T / t_steps
+    t_pts = np.arange(0, T + dt, dt)
+
+    # create non-uniform grids, which is denser when strike is close to spot, this improves efficiency
+    normal_sd = np.linspace(start=-2, stop=2, num=S_steps)
+    normal_density = scipy.stats.norm.pdf(normal_sd)
+    inverse_density = 1 / normal_density
+    dS = inverse_density / np.sum(inverse_density) * (max_moneyness - min_moneyness)
+    S_grids = np.zeros(S_steps + 1)
+    S_grids[1:] = dS
+    S_grids = np.cumsum(S_grids)
+    S_grids = np.sort(S_grids)
+    S_grids = S_grids * S0
+
+    # empty grid
+    f = np.empty((len(t_pts), len(S_grids)))
+    f[:] = np.nan
+
+    # boundary conditions
+    if type1 == 'Call':
+        # expiry boundary conditions
+        f[-1, :] = np.clip(S_grids - K, a_min=0, a_max=None)
+        # upper boundary for S_max, discounted
+        f[:, -1] = np.clip(S_grids[-1] - K, a_min=0, a_max=None) * np.exp(-r * (T - t_pts))
+        # lower boundary for S_0
+        f[:, 0] = 0
+
+    else:
+        # expiry boundary conditions
+        f[-1, :] = np.clip(K - S_grids, a_min=0, a_max=None)
+        # upper boundary for S_max
+        f[:, -1] = 0
+        # lower boundary for S_0, discounted
+        f[:, 0] = np.clip(K - S_grids[0], a_min=0, a_max=None) * np.exp(-r * (T - t_pts))
+
+    # vector of implied volatility
+    vol_vector = LVF_vol(alpha, S_grids, beta)
+
+    # calculate matrics
+    a, b, c, B, C = cal_matrics(dt, r, q, vol_vector, S_grids)
+    B_inv = np.linalg.inv(B)
+    # probagate values from boundaries to whole grid
+    for i in range(len(t_pts) - 1)[::-1]:
+        f_i = f[i + 1, :]
+        f_im1 = f[i, :]
+
+        d = np.zeros(f_i.shape[0])[1:-1]
+        d[0] = a[0] * (f_i[0] + f_im1[0])
+        d[-1] = c[-1] * (f_i[-1] + f_im1[-1])
+
+        next_F = np.dot(B_inv, (np.dot(C, f_i[1:-1]) + d))
+        f[i, :][1:-1] = next_F
+
+    result = pd.DataFrame({'S0': S_grids[0:].flatten(), 'val': f[0, :].flatten()})
+    return result.iloc[(result['S0'] - S0).abs().argsort()[0]][1]
