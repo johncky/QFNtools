@@ -39,8 +39,6 @@ BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
 # Unit information prior
 BLR = UnitInfoLinReg()
 BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
-
-BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
 ```
 
 #### MCMC samples
