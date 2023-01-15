@@ -3,14 +3,14 @@ Content
 
 
 **Some functions**:
+- [Bayesian Linear Regression with Bayesian Model Averaging](#Bayesian-linear-regression-with-Bayesian-model-averaging ) ： Run Bayesian linear regression
+with Bayesian model averaging, sample from posterior distri
+
 - [Efficient Frontier](#efficient-frontier) : Solve Efficient Frontier with risk measures "Variance", "Entropy", "Conditional VaR" or "VaR". 
 
 - [Dynamic Beta](#dynamic-beta) ：Find betas/hedge ratio in dynamic factor model with Kalman Filter.
 
 - [Risk Neutral Density](#hsi-risk-neutral-density) ：Download option data from HKEX and find underlying risk-neutral densities.
-
-- [Bayesian Linear Regression with Bayesian Model Averaging](#Bayesian-linear-regression-with-Bayesian-model-averaging ) ： Run Bayesian linear regression
-with Bayesian model averaging, sample from posterior distri
 
 - [Option Pricing under CEV model](#Option-Pricing-under-CEV-model) ： Run Bayesian linear regression
 with Bayesian model averaging, sample from posterior distri
@@ -99,8 +99,6 @@ from qfntools.qfntools import BMA_LinReg
 data = pd.read_table('http://www2.stat.duke.edu/~pdh10/FCBS/Exercises/azdiabetes.dat', sep="\s+").drop(columns=['diabetes'])
 data.insert(0,'intercept', 1)
 
-
-
 # Bayesian linear regression (Zellner's g prior) with Bayesian model averaging 
 BMA = BMA_LinReg(g=10000)
 BMA.fit(data, y='skin', v0=1, sigma02=0.2)
@@ -108,7 +106,8 @@ BMA.fit(data, y='skin', v0=1, sigma02=0.2)
 
 #### MCMC samples
 ```python
-samples = BMA.sample_posterior(10000) # model & parameter (betas, sigma2) samples from Gibbs sampler
+# model & parameter (betas, sigma2) samples from Gibbs sampler
+samples = BMA.sample_posterior(10000) 
 ```
 
 #### Diagnostic plots
@@ -201,11 +200,10 @@ from qfntools.qfntools import CEV_European
 # q: dividend yield
 # S0: spot price
 # type: 'Call' or 'Put'
-
-option_1 = {'T': 1, 'K': 0.8*100, 'r':0.02, 'q':0.01, 'S0': 100, 'type':'Call'}
+option_param = {'T': 1, 'K': 0.8*100, 'r':0.02, 'q':0.01, 'S0': 100, 'type':'Call'}
 
 # price the option under CEV(alpha=20, beta=2) model
-CEV_European(option_1, alpha=20, beta=2)
+CEV_European(option_param, alpha=20, beta=2)
 ```
 
 ![alt text](https://github.com/johncky/Quantitative-Finance/blob/main/pic/Option_value_under_CEV.png?raw=true)
