@@ -12,8 +12,7 @@ with Bayesian model averaging, sample from posterior distri
 
 - [Risk Neutral Density](#hsi-risk-neutral-density) ：Download option data from HKEX and find underlying risk-neutral densities.
 
-- [Option Pricing under CEV model](#Option-Pricing-under-CEV-model) ： Run Bayesian linear regression
-with Bayesian model averaging, sample from posterior distri
+- [Option Pricing under CEV model](#Option-Pricing-under-CEV-model) ： Price European options under CEV model using numerical method.
 
 
 **Other stuff**:
