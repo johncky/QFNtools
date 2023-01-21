@@ -44,8 +44,6 @@ BLR.fit(data, formula="skin ~ intercept + bmi + age", sigma02=0.2, v0=1)
 ```python
 # return a diagnostic object
 mcmc_samples = BLR.sample_posterior(10000)
-# retreieve actual samples DataFrame
-mcmc_samples.samples
 ```
 #### MCMC diagnostic plots
 ```python
